@@ -1,45 +1,34 @@
 {
-    "name": ":vendor_name/:package_name",
-    "description": ":package_description",
+    "name": "devsrv/livewire-inplace",
+    "description": "test description",
     "keywords": [
-        ":vendor_name",
-        ":package_name"
+        "devsrv",
+        "livewire-inplace",
+        "Laravel",
+        "Laravel Livewire"
     ],
-    "homepage": "https://github.com/:vendor_name/:package_name",
+    "homepage": "https://github.com/devsrv/livewire-inplace",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": ":author_email",
+            "name": "Sourav Rakshit",
+            "email": "hello@itsrav.dev",
             "role": "Developer"
         }
     ],
     "require": {
-        "php": "^8.0",
-        "spatie/laravel-package-tools": "^1.4.3",
-        "illuminate/contracts": "^8.0"
+        "php": ">=7.4",
+        "illuminate/contracts": "^8.32",
+        "illuminate/support": "^8.32"
     },
     "require-dev": {
-        "orchestra/testbench": "^6.13",
-        "phpunit/phpunit": "^9.3",
-        "spatie/laravel-ray": "^1.9",
-        "vimeo/psalm": "^4.4"
+        "phpunit/phpunit": "^9.3"
     },
     "autoload": {
         "psr-4": {
-            "Spatie\\Skeleton\\": "src",
-            "Spatie\\Skeleton\\Database\\Factories\\": "database/factories"
+            "devsrv\\inplace\\": "src",
+            "devsrv\\inplace\\Database\\Factories\\": "database/factories"
         }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Spatie\\Skeleton\\Tests\\": "tests"
-        }
-    },
-    "scripts": {
-        "psalm": "vendor/bin/psalm",
-        "test": "vendor/bin/phpunit --colors=always",
-        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
     },
     "config": {
         "sort-packages": true
@@ -47,11 +36,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Spatie\\Skeleton\\SkeletonServiceProvider"
-            ],
-            "aliases": {
-                "Skeleton": "Spatie\\Skeleton\\SkeletonFacade"
-            }
+                "devsrv\\inplace\\InplaceServiceProvider"
+            ]
         }
     },
     "minimum-stability": "dev",
