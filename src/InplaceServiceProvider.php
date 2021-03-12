@@ -1,12 +1,10 @@
 <?php
 
-namespace Spatie\Skeleton;
+namespace devsrv\inplace;
 
-use OriginalVendor\LaravelPackageTools\Package;
-use OriginalVendor\LaravelPackageTools\PackageServiceProvider;
-use Spatie\Skeleton\Commands\SkeletonCommand;
+use Illuminate\Support\ServiceProvider;
 
-class SkeletonServiceProvider extends PackageServiceProvider
+class InplaceServiceProvider extends ServiceProvider
 {
     public function configurePackage(Package $package): void
     {
