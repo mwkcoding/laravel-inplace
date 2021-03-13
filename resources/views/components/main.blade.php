@@ -2,6 +2,11 @@
 
 @section('inplace.content')
     
-<p>Hi there ! {{ time() }}</p>
+<livewire:editable
+    model="users:1"
+    :inline="true"
+    value="Lorem Ipsum is simply"
+    validation="required|min:10"
+/>
 
 @endsection
