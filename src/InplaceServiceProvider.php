@@ -2,8 +2,13 @@
 
 namespace devsrv\inplace;
 
+use Livewire\Livewire;
 use Illuminate\Support\ServiceProvider;
-use devsrv\inplace\Components\Component;
+use devsrv\inplace\Components\{
+    Component,
+    InlineBasicCommon
+};
+use devsrv\inplace\Livewire\Editable;
 
 class InplaceServiceProvider extends ServiceProvider
 {
@@ -13,7 +18,10 @@ class InplaceServiceProvider extends ServiceProvider
 
         $this->loadViewComponentsAs('inplace', [
             Component::class,
+            InlineBasicCommon::class,
         ]);
+
+        Livewire::component('editable', Editable::class);
     }
 
     /**
