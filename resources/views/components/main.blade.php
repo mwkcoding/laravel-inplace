@@ -1,12 +1,8 @@
-@extends('inplace::layout.base')
-
-@section('inplace.content')
-    
 <livewire:editable
-    model="users:1"
+    model=""
     :inline="$inline"
-    :value="$value"
+    :value="!empty($slot->toHtml()) ? $slot->toHtml() : $value"
+    :prepend="isset($before) ? serialize($before) : null"
+    :append="isset($after) ? serialize($after) : null"
     :validation="$validation"
 />
-
-@endsection
