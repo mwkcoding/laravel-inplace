@@ -6,14 +6,19 @@ trait InplaceEditable
 {
     public bool $inline = false;
     public $value;
+    public $prepend = null;
+    public $append = null;
     public $editedValue = '';
     public $options;
     public $renderAsBladex;
     public $renderFormField;
     public $validation = 'required';
 
-    public function mount($renderAsBladex = null) {
+    public function mount($prepend = null, $append = null, $renderAsBladex = null) {
         $this->renderAsBladex = $renderAsBladex ?? ( $this->inline ? 'inplace-inline-basic-common' : 'inplace-editable-renderas-common' );
+
+        $this->prepend = $prepend ? htmlentities($prepend) : null;
+        $this->append = $append ? htmlentities($append) : null;
     }
 
     private function handleValidation($editedValue, $customRules = null) {

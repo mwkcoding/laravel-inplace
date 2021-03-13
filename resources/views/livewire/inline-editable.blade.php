@@ -9,6 +9,8 @@
             ::contenteditable="editing"
             x-text="editedContent"
             class="edit-target"
+            :prepend="$prepend"
+            :append="$append"
             value="$value"
         />
 

@@ -7,19 +7,19 @@ use Illuminate\View\Component as ViewComponent;
 class Component extends ViewComponent
 {
     public bool $inline = false;
+    public $validation;
     public $value;
-    public $validation = 'required';
 
     /**
      * Create a new component instance.
      *
      * @return void
      */
-    public function __construct($inline, $value, $validation)
+    public function __construct($inline, $validation = 'required', $value = null)
     {
         $this->inline = $inline;
-        $this->value = $value;
         $this->validation = $validation;
+        $this->value = $value;
     }
 
     /**
