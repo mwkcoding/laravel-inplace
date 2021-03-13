@@ -5,4 +5,5 @@
     :prepend="isset($before) ? serialize($before) : null"
     :append="isset($after) ? serialize($after) : null"
     :validation="$validation"
+    :render-as="$attributes->get('render-as') ?? null"
 />

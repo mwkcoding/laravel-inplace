@@ -10,12 +10,12 @@ trait InplaceEditable
     public $append = null;
     public $editedValue = '';
     public $options;
-    public $renderAsBladex;
+    public $renderAs;
     public $renderFormField;
     public $validation = 'required';
 
-    public function mount($prepend = null, $append = null, $renderAsBladex = null) {
-        $this->renderAsBladex = $renderAsBladex ?? ( $this->inline ? 'inplace-inline-basic-common' : 'inplace-editable-renderas-common' );
+    public function mount($prepend = null, $append = null, $renderAs = null) {
+        $this->renderAs = $renderAs ?? ( $this->inline ? 'inplace-inline-basic-common' : 'inplace-editable-renderas-common' );
 
         $this->prepend = $prepend ? htmlentities($prepend) : null;
         $this->append = $append ? htmlentities($append) : null;

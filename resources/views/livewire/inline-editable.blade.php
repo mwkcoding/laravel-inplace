@@ -1,7 +1,7 @@
 <div class="editable" x-data="{...inlineEditable(), editedContent: `{{ $value }}`, content: `{{ $value }}`}" x-init="onBoot($watch)">
     <div class="content">
         <x-dynamic-component
-            :component="$renderAsBladex"
+            :component="$renderAs"
             @input="trackEdit($event)"
             @keydown.escape="handleCancel"
             @keydown.enter.stop.prevent="editedContent && content !== editedContent ? handleSave() : null"
