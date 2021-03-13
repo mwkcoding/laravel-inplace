@@ -3,7 +3,7 @@
 namespace devsrv\inplace;
 
 use Illuminate\Support\ServiceProvider;
-use devsrv\inplace\Components\TestComponent;
+use devsrv\inplace\Components\Component;
 
 class InplaceServiceProvider extends ServiceProvider
 {
@@ -12,7 +12,7 @@ class InplaceServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'inplace');
 
         $this->loadViewComponentsAs('inplace', [
-            TestComponent::class,
+            Component::class,
         ]);
     }
 

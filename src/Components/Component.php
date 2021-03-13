@@ -2,9 +2,9 @@
 
 namespace devsrv\inplace\Components;
 
-use Illuminate\View\Component;
+use Illuminate\View\Component as ViewComponent;
 
-class TestComponent extends Component
+class Component extends ViewComponent
 {
     /**
      * Create a new component instance.
@@ -22,6 +22,6 @@ class TestComponent extends Component
      */
     public function render()
     {
-        return view('inplace::myview');
+        return view('inplace::components.main');
     }
 }

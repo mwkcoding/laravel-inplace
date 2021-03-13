@@ -1,7 +1,5 @@
 <style>
-    body {
-        font-family: 'Nunito';
-    }
+    body {font-family: 'Nunito';}
     div.editable{
         display: flex;
         align-items: center;
