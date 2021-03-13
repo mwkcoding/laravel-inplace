@@ -38,6 +38,7 @@
     </div>
 </div>
 
+@push('inplace.component.script')
 @once
 <script>
     function inlineEditable() {
@@ -120,3 +121,4 @@
     }
 </script>
 @endonce
+@endpush
