@@ -1,13 +1,14 @@
 {
-    "name": "devsrv/livewire-inplace",
+    "name": "devsrv/laravel-inplace",
     "description": "test description",
     "keywords": [
         "devsrv",
+        "laravel-inplace",
         "livewire-inplace",
         "Laravel",
         "Laravel Livewire"
     ],
-    "homepage": "https://github.com/devsrv/livewire-inplace",
+    "homepage": "https://github.com/devsrv/laravel-inplace",
     "license": "MIT",
     "authors": [
         {
