@@ -1,6 +1,7 @@
 <?php
 
 namespace devsrv\inplace\Livewire\Traits;
+use devsrv\inplace\Exceptions\ModelException;
 
 trait InplaceEditable
 {
@@ -29,10 +30,10 @@ trait InplaceEditable
                 [$modelClass, $colWithKey] = explode(':', $model);
                 [$column, $primaryKey] = explode(',', $colWithKey);
             } catch (\Exception $th) {
-                throw new \Exception('incorrect model attribute format, expected namespace\Model:column,key');
+                throw ModelException::badFormat();
             }
             
-            if(! class_exists($modelClass)) throw new \Exception('incorrect model class');
+            if(! class_exists($modelClass)) throw ModelException::notFound($modelClass);
 
             $this->model = $modelClass::findOrFail($primaryKey);
             $this->column = $column;

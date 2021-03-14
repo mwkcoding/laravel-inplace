@@ -6,6 +6,7 @@ use Livewire\Component;
 use Illuminate\Support\Str;
 use devsrv\inplace\Livewire\Traits\InplaceEditable;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use devsrv\inplace\Exceptions\{ ModelException, CustomEditableException };
 
 class Editable extends Component
 {
@@ -18,7 +19,7 @@ class Editable extends Component
 
         if($this->saveusing) { return $this->customSave($this->model, $this->column, $editedValue); }
 
-        if(! $this->model) throw new \Exception('No model to update');
+        if(! $this->model) throw ModelException::missing();
 
         // db save success
         $this->model->{$this->column} = $editedValue;
@@ -37,16 +38,16 @@ class Editable extends Component
     }
 
     protected function customSave($model, $column, $editedValue) {
-        if(! class_exists($this->saveusing)) { throw new \Exception('Custom editable class not found'); }
+        if(! class_exists($this->saveusing)) { throw CustomEditableException::notFound($this->saveusing); }
 
         $saveAs = new $this->saveusing;
         
-        if(! is_callable([$saveAs, 'save'])) throw new \Exception('Custom editable method not callable');
+        if(! is_callable([$saveAs, 'save'])) throw CustomEditableException::missing();
 
         $status = ($saveAs)->save($model, $column, $editedValue);
 
         if(! is_array($status) || !isset($status['success'])) {
-            throw new \Exception('Invalid response, expected array with required parameter - (bool) success');
+            throw CustomEditableException::badFormat();
         }
 
         if($status['success']) {
