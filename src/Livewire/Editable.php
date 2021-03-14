@@ -16,18 +16,24 @@ class Editable extends Component
 
         $this->handleValidation($editedValue);
 
-        if($this->saveusing) { return $this->customSave($editedValue); }
+        if($this->saveusing) { return $this->customSave($this->model, $editedValue); }
 
-        // db perform success
-        $this->value = $editedValue;
-        return [
-            'success' => 1
-        ];
+        if(! $this->model) throw new \Exception('No model to update');
+
+        // db save success
+        $this->model->{$this->column} = $editedValue;
+        if($this->model->save()) {
+            $this->value = $editedValue;
+            return [
+                'success' => 1
+            ];
+        }
 
         // db perform fail
-        // return [
-        //     'success' => 0
-        // ];
+        return [
+            'success' => 0,
+            'message' => "couldn't save data"
+        ];
     }
 
     protected function customSave($editedValue) {
