@@ -5,14 +5,14 @@ namespace devsrv\inplace\Livewire;
 use Livewire\Component;
 use Illuminate\Support\Str;
 use devsrv\inplace\Livewire\Traits\InplaceEditable;
-// use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class Editable extends Component
 {
-    use InplaceEditable;
+    use InplaceEditable, AuthorizesRequests;
 
     public function save($editedValue) {
-        // $this->authorize('update', $this->post);
+        $this->handleAuthorize();
 
         $this->handleValidation($editedValue);
 

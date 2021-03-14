@@ -1,5 +1,5 @@
 <livewire:editable
-    model=""
+    :model="$attributes->get('model') ?? null"
     :inline="$inline"
     :value="!empty($slot->toHtml()) ? $slot->toHtml() : $value"
     :prepend="isset($before) ? serialize($before) : null"
