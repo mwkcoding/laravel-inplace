@@ -11,6 +11,7 @@ trait InplaceEditable
     public $editedValue = '';
     public $options;
     public $renderAs;
+    public $saveusing = null;
     public $renderFormField;
     public $validation = 'required';
 
