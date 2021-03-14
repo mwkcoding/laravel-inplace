@@ -6,6 +6,7 @@ trait InplaceEditable
 {
     public bool $inline = false;
     public $model;
+    public $column;
     public $value;
     public $prepend = null;
     public $append = null;
@@ -24,14 +25,16 @@ trait InplaceEditable
 
         if($model) {
             try {
-                [$modelClass, $primaryKey] = explode(':', $model);
+                [$modelClass, $colWithKey] = explode(':', $model);
+                [$column, $primaryKey] = explode(',', $colWithKey);
             } catch (\Exception $th) {
-                throw new \Exception('incorrect model attribute format, expected namespace\Model:key');
+                throw new \Exception('incorrect model attribute format, expected namespace\Model:column,key');
             }
             
             if(! class_exists($modelClass)) throw new \Exception('incorrect model class');
 
             $this->model = $modelClass::findOrFail($primaryKey);
+            $this->column = $column;
         }
     }
 
