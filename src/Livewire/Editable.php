@@ -16,7 +16,7 @@ class Editable extends Component
 
         $this->handleValidation($editedValue);
 
-        if($this->saveusing) { return $this->customSave($this->model, $editedValue); }
+        if($this->saveusing) { return $this->customSave($this->model, $this->column, $editedValue); }
 
         if(! $this->model) throw new \Exception('No model to update');
 
@@ -36,14 +36,14 @@ class Editable extends Component
         ];
     }
 
-    protected function customSave($editedValue) {
+    protected function customSave($model, $column, $editedValue) {
         if(! class_exists($this->saveusing)) { throw new \Exception('Custom editable class not found'); }
 
         $saveAs = new $this->saveusing;
         
         if(! is_callable([$saveAs, 'save'])) throw new \Exception('Custom editable method not callable');
 
-        $status = ($saveAs)->save($editedValue);
+        $status = ($saveAs)->save($model, $column, $editedValue);
 
         if(! is_array($status) || !isset($status['success'])) {
             throw new \Exception('Invalid response, expected array with required parameter - (bool) success');
