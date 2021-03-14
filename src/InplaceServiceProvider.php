@@ -22,6 +22,10 @@ class InplaceServiceProvider extends ServiceProvider
         ]);
 
         Livewire::component('editable', Editable::class);
+
+        $this->publishes([
+            __DIR__.'/../config/inplace.php' => config_path('inplace.php'),
+        ]);
     }
 
     /**
