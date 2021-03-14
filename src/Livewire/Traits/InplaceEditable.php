@@ -16,6 +16,7 @@ trait InplaceEditable
     public $saveusing = null;
     public $renderFormField;
     public $validation = 'required';
+    public $shouldAuthorize = null;
 
     public function mount($model = null, $prepend = null, $append = null, $renderAs = null) {
         $this->renderAs = $renderAs ?? ( $this->inline ? 'inplace-inline-basic-common' : 'inplace-editable-renderas-common' );
@@ -63,6 +64,11 @@ trait InplaceEditable
     }
 
     protected function handleAuthorize() {
+        if($this->shouldAuthorize !== null) {
+            if($this->shouldAuthorize && $this->model) { $this->authorize('update', $this->model); }
+            else return true;
+        }
+
         $globalAuthorize = config('inplace.authorize');
 
         if($globalAuthorize !== null && $globalAuthorize && $this->model) $this->authorize('update', $this->model);
