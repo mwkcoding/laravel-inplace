@@ -35,7 +35,7 @@ class Editable extends Component
 
         $saveAs = new $this->saveusing;
         
-        if(! is_callable(array($saveAs, 'save'))) throw new \Exception('Custom editable method not callable');
+        if(! is_callable([$saveAs, 'save'])) throw new \Exception('Custom editable method not callable');
 
         $status = ($saveAs)->save($editedValue);
 
