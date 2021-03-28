@@ -2,14 +2,12 @@
 
 namespace devsrv\inplace;
 
-use Livewire\Livewire;
 use Illuminate\Support\ServiceProvider;
 use devsrv\inplace\Components\{
     Component,
     InlineBasicCommon,
     InlineText,
 };
-use devsrv\inplace\Livewire\Editable;
 
 class InplaceServiceProvider extends ServiceProvider
 {
@@ -22,8 +20,6 @@ class InplaceServiceProvider extends ServiceProvider
             InlineBasicCommon::class,
             InlineText::class,
         ]);
-
-        Livewire::component('editable', Editable::class);
 
         $this->publishes([
             __DIR__.'/../config/inplace.php' => config_path('inplace.php'),
