@@ -41,7 +41,7 @@
     </div>
 
     <div class="status">
-        {{-- <p wire:loading wire:target="save">saving . . .</p> --}}
+        <p x-show="saving">saving . . .</p>
 
         <p x-show.transition.out.duration.1000ms="success">success</p>
         <p x-show.transition.out.duration.1000ms="error">failed</p>
