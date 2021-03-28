@@ -3,7 +3,7 @@
 namespace devsrv\inplace\Components;
 
 use Illuminate\View\Component;
-use devsrv\inplace\Exceptions\ModelException;
+use Illuminate\Support\Facades\Crypt;
 
 class InlineText extends Component
 {
@@ -23,8 +23,8 @@ class InlineText extends Component
         $this->value = $value;
         $this->validation = $validation;
         $this->shouldAuthorize = $shouldAuthorize;
-        $this->model = addslashes($model);
-        $this->saveusing = addslashes($saveusing);
+        $this->model = $model ? Crypt::encryptString($model) : null;
+        $this->saveusing = $saveusing ? Crypt::encryptString($saveusing) : null;
 
         $this->renderAs = $renderAs ?? 'inplace-inline-basic-common';
 

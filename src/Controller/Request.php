@@ -6,6 +6,8 @@ use Illuminate\Http\Request as HTTPRequest;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Validator;
 use devsrv\inplace\Exceptions\{ ModelException, CustomEditableException };
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
 
 class Request {
     use AuthorizesRequests;
@@ -22,7 +24,8 @@ class Request {
     public function save(HTTPRequest $request) {
         $this->content = $request->content;
         $this->shouldAuthorize = is_null($request->authorize) ? null : (bool) $request->authorize;
-        $this->saveusing = $request->saveusing ?? null;
+
+        $this->hydrateSaveUsing($request->saveusing);
 
         $this->resolveModel($request->model, $request->column);
         $this->isAuthorized();
@@ -49,8 +52,14 @@ class Request {
         ];
     }
 
-    private function resolveModel($model, $column) {
-        if($model) {
+    private function resolveModel($model_encrypted, $column) {
+        if($model_encrypted) {
+            try {
+                $model = Crypt::decryptString($model_encrypted);
+            } catch (DecryptException $e) {
+                throw $e;
+            }
+
             try {
                 [$modelClass, $colWithKey] = explode(':', $model);
                 [$column, $primaryKey] = explode(',', $colWithKey);
@@ -92,6 +101,16 @@ class Request {
         $globalAuthorize = config('inplace.authorize');
 
         if($globalAuthorize !== null && $globalAuthorize && $this->model) $this->authorize('update', $this->model);
+    }
+
+    private function hydrateSaveUsing($saveusing) {
+        if($saveusing) {
+            try {
+                $this->saveusing = Crypt::decryptString($saveusing);
+            } catch (DecryptException $e) {
+                throw $e;
+            }
+        }
     }
 
     protected function customSave($model, $column, $editedValue) {
