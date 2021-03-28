@@ -94,6 +94,10 @@
                 });
             },
             handleSave() {
+                window.dispatchEvent(new CustomEvent("inplace-editable-progress", {
+                    detail: { start: true }
+                }));
+
                 this.editing = false;
                 this.saving = true;
 
@@ -136,6 +140,11 @@
                     this.editing = false;
                     this.error = true;
                     this.editedContent = this.content;
+                })
+                .finally(() => {
+                    window.dispatchEvent(new CustomEvent("inplace-editable-progress", {
+                        detail: { stop: true }
+                    }));
                 });
             },
             handleCancel() {
