@@ -11,7 +11,6 @@ class InlineText extends Component
     public $value;
     public $prepend;
     public $append;
-    public $editedValue = '';
     public $renderAs;
     public $saveusing;
     public $validation;
@@ -27,7 +26,6 @@ class InlineText extends Component
         $this->model = addslashes($model);
         $this->saveusing = addslashes($saveusing);
 
-        // $this->renderAs = $renderAs ?? ( $this->inline ? 'inplace-inline-basic-common' : 'inplace-editable-renderas-common' );
         $this->renderAs = $renderAs ?? 'inplace-inline-basic-common';
 
         $this->prepend = $prepend ? htmlentities($prepend) : null;

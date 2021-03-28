@@ -7,8 +7,8 @@ use Illuminate\View\Component as ViewComponent;
 class Component extends ViewComponent
 {
     public bool $inline = false;
-    public $authorize = null;
-    public $model = null;
+    public $authorize;
+    public $model;
     public $validation;
     public $value;
 
