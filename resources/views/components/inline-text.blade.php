@@ -4,6 +4,7 @@
     content: `{{ $value }}`,
     authorize: '{{ $shouldAuthorize === null ? null : ((bool) $shouldAuthorize === true ? 1 : 0) }}',
     model: '{{ $model }}',
+    saveusing: '{{ $saveusing }}',
     rules: {!! str_replace('"', '\'', e(json_encode($validation))) !!}
 }" x-init="onBoot($watch)">
     <div class="content">
@@ -110,6 +111,7 @@
                         authorize: this.authorize,
                         model: this.model,
                         rules: this.rules,
+                        saveusing: this.saveusing,
                     })
                 })
                 .then(res => res.json())

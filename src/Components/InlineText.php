@@ -13,18 +13,19 @@ class InlineText extends Component
     public $append;
     public $editedValue = '';
     public $renderAs;
-    public $saveusing = null;
+    public $saveusing;
     public $validation;
     public $shouldAuthorize;
 
     public $csrf_token;
     public $save_route;
 
-    public function __construct($value = null, $model = null, $prepend = null, $append = null, $renderAs = null, $shouldAuthorize = null, $validation = 'required') {
+    public function __construct($value = null, $model = null, $prepend = null, $append = null, $renderAs = null, $shouldAuthorize = null, $saveusing = null, $validation = 'required') {
         $this->value = $value;
         $this->validation = $validation;
         $this->shouldAuthorize = $shouldAuthorize;
         $this->model = addslashes($model);
+        $this->saveusing = addslashes($saveusing);
 
         // $this->renderAs = $renderAs ?? ( $this->inline ? 'inplace-inline-basic-common' : 'inplace-editable-renderas-common' );
         $this->renderAs = $renderAs ?? 'inplace-inline-basic-common';
