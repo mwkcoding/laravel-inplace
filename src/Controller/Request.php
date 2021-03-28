@@ -20,7 +20,7 @@ class Request {
 
     public function save(HTTPRequest $request) {
         $this->content = $request->content;
-        $this->shouldAuthorize = in_array($request->authorize, [1, 0]) ? (bool) $request->authorize : null;
+        $this->shouldAuthorize = is_null($request->authorize) ? null : (bool) $request->authorize;
 
         $this->resolveModel($request->model, $request->column);
         $this->isAuthorized();
