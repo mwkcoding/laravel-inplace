@@ -6,7 +6,8 @@ use Livewire\Livewire;
 use Illuminate\Support\ServiceProvider;
 use devsrv\inplace\Components\{
     Component,
-    InlineBasicCommon
+    InlineBasicCommon,
+    InlineText,
 };
 use devsrv\inplace\Livewire\Editable;
 
@@ -19,6 +20,7 @@ class InplaceServiceProvider extends ServiceProvider
         $this->loadViewComponentsAs('inplace', [
             Component::class,
             InlineBasicCommon::class,
+            InlineText::class,
         ]);
 
         Livewire::component('editable', Editable::class);
@@ -26,6 +28,8 @@ class InplaceServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../config/inplace.php' => config_path('inplace.php'),
         ]);
+
+        $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
     }
 
     /**
