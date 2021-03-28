@@ -1,4 +1,11 @@
-<div class="editable" x-data="{...inlineEditable(), editedContent: `{{ $value }}`, content: `{{ $value }}`}" x-init="onBoot($watch)">
+<div class="editable" x-data="{
+    ...inlineEditable(), 
+    editedContent: `{{ $value }}`, 
+    content: `{{ $value }}`,
+    authorize: '{{ $shouldAuthorize === null ? null : ((bool) $shouldAuthorize === true ? 1 : 0) }}',
+    model: '{{ $model }}',
+    rules: {!! str_replace('"', '\'', e(json_encode($validation))) !!}
+}" x-init="onBoot($watch)">
     <div class="content">
         <x-dynamic-component
             :component="$renderAs"
@@ -100,9 +107,9 @@
                     credentials: "same-origin",
                     body: JSON.stringify({
                         content: this.editedContent,
-                        authorize: "{{ $shouldAuthorize === null ? null : ((bool) $shouldAuthorize === true ? 1 : 0) }}",
-                        model: '{{ $model }}',
-                        rules: @json($validation),
+                        authorize: this.authorize,
+                        model: this.model,
+                        rules: this.rules,
                     })
                 })
                 .then(res => res.json())
