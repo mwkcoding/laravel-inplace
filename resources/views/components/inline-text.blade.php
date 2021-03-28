@@ -60,8 +60,8 @@
             onBoot(watch) {
                 watch('error', has => {
                     if(has) {
-                        window.dispatchEvent(new CustomEvent("inline-editable-finish", {
-                            detail: { hasError: true }
+                        window.dispatchEvent(new CustomEvent("inplace-editable-finish", {
+                            detail: { success: false }
                         }));
 
                         setTimeout(() => this.error = false, 1500);
@@ -70,8 +70,8 @@
 
                 watch('success', has => {
                     if(has) {
-                        window.dispatchEvent(new CustomEvent("inline-editable-finish", {
-                            detail: { hasSuccess: true }
+                        window.dispatchEvent(new CustomEvent("inplace-editable-finish", {
+                            detail: { success: true }
                         }));
 
                         setTimeout(() => this.success = false, 1500);
