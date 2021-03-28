@@ -17,7 +17,7 @@ class Component extends ViewComponent
      *
      * @return void
      */
-    public function __construct($inline, $model = null, $authorize = null, $validation = 'required', $value = null)
+    public function __construct($inline, $model = null, $authorize = null, $validation = null, $value = null)
     {
         $this->inline = $inline;
         $this->model = $model;
