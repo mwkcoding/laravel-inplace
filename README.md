@@ -1,9 +1,7 @@
 # Laravel Inplace
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor_name/:package_name.svg?style=flat-square)](https://packagist.org/packages/:vendor_name/:package_name)
-[![GitHub Tests Action Status](https://img.shields.io/github/workflow/status/:vendor_name/:package_name/run-tests?label=tests)](https://github.com/:vendor_name/:package_name/actions?query=workflow%3ATests+branch%3Amaster)
-[![GitHub Code Style Action Status](https://img.shields.io/github/workflow/status/:vendor_name/:package_name/Check%20&%20fix%20styling?label=code%20style)](https://github.com/:vendor_name/:package_name/actions?query=workflow%3A"Check+%26+fix+styling"+branch%3Amaster)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_name/:package_name.svg?style=flat-square)](https://packagist.org/packages/:vendor_name/:package_name)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/devsrv/laravel-inplace.svg?style=flat-square)](https://packagist.org/packages/devsrv/laravel-inplace)
+[![Total Downloads](https://img.shields.io/packagist/dt/devsrv/laravel-inplace.svg?style=flat-square)](https://packagist.org/packages/devsrv/laravel-inplace)
 
 Because forms are boaring.
 
@@ -35,23 +33,13 @@ include `@include('inplace::styles')` and `@include('inplace::scripts')` on ever
 
 ### 💡 NOTE
 
-inplace uses [Livewire](https://laravel-livewire.com/) and [Alpine JS](https://github.com/alpinejs/alpine) internally, so if you are using any of these in your application then follow the below setup method or else you'll get conflict errors
+inplace uses [Alpine JS](https://github.com/alpinejs/alpine) and [Alpine Magic Helpers](https://github.com/alpine-collective/alpine-magic-helpers) internally, so if you are using Alpine in your application then follow the below setup method or else you'll get conflict errors
 
-#### if you are using Livewire in your application
-
-- after `@livewireStyles` add the `@stack('inplace.component.style')` directive for inplace's styles to be pushed properly.
-
-- after `@livewireScripts` add the below scripts in the given order
-
-  1.  `<script src="https://cdn.jsdelivr.net/gh/alpine-collective/alpine-magic-helpers@1.0.0/dist/index.min.js"></script>`
-  2.  `<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.1/dist/alpine.min.js" defer></script>`
-
-- add a `@stack('inplace.component.script')` directive for inplace scripts to be pushed properly
-
-#### if you are using Alpine JS in your application
 
 - add the alpine magic helpers script before alpine -
   1.  `<script src="https://cdn.jsdelivr.net/gh/alpine-collective/alpine-magic-helpers@1.0.0/dist/index.min.js"></script>`
+
+- add a `@stack('inplace.component.script')` directive at the end in the Footer for inplace scripts to be pushed properly
 
 ### Publish config
 
@@ -160,9 +148,27 @@ refer to this [CustomSave](https://github.com/devsrv/laravel-inplace-example/blo
 
 refer to this example [component class](https://github.com/devsrv/laravel-inplace-example/blob/master/app/View/Components/CustomInlineRender.php) & [component view](https://github.com/devsrv/laravel-inplace-example/blob/master/resources/views/components/custom-inline-render.blade.php)
 
+**Example - 5** | Complex Validation Rules
+
+```php
+@php
+$rules = serialize(['required', \Illuminate\Validation\Rule::in(['11', '12']), 'min:2']);  // make sure to serialize
+@endphp
+
+<x-inplace-component
+ inline
+model="App\Models\User:name,1"
+:validation="$rules"                   // complex validation can be passed by `serialize`
+>
+  {{ \App\Models\User::find(1)->name }}
+</x-inplace-component>
+```
+refer [this example](https://github.com/devsrv/laravel-inplace-example/blob/3057161a1af84a2f9a9c215157f0e28c9edcb1c4/resources/views/welcome.blade.php#L33)
+
 ### Bonus:
 
-1. **authorize manually:** when passing custom class to save data you may choose to authorize the action from within your class using
+#### 1. **authorize manually:** 
+when passing custom class to save data you may choose to authorize the action from within your class using
    1. `Gate::authorize('update', $model);` OR
    2. `Gate::authorize('edit-settings');` OR
    3. `$this->authorize('update', $model);`
@@ -193,6 +199,10 @@ class CustomSave
 ```
 
 refer this [example](https://github.com/devsrv/laravel-inplace-example/blob/9f6961485e8c6488e6ffa56c9ebb4e45686937ce/app/Http/Inplace/CustomSave.php#L30)
+
+#### 2. Listen events
+1. `inplace-editable-progress` custom `window` browser event diaptched after ajax start & ajax finished. refer to [example](https://github.com/devsrv/laravel-inplace-example/blob/3057161a1af84a2f9a9c215157f0e28c9edcb1c4/resources/views/app.blade.php#L58) for [NProgress](https://github.com/rstacruz/nprogress) Implementation
+2. `inplace-editable-finish` custom `window` browser event diaptched after content is either saved | failed by server. refer to [example](https://github.com/devsrv/laravel-inplace-example/blob/3057161a1af84a2f9a9c215157f0e28c9edcb1c4/resources/views/app.blade.php#L49) for a sample notifier system
 
 ## Changelog
 
