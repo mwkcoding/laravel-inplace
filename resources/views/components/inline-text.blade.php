@@ -41,7 +41,7 @@
     </div>
 
     <div class="status">
-        <p wire:loading wire:target="save">saving . . .</p>
+        {{-- <p wire:loading wire:target="save">saving . . .</p> --}}
 
         <p x-show.transition.out.duration.1000ms="success">success</p>
         <p x-show.transition.out.duration.1000ms="error">failed</p>
@@ -121,6 +121,7 @@
 
                     if(Object.prototype.hasOwnProperty.call(result, 'success') && Number(result.success) === 1) {
                         this.success = true;
+                        this.content = this.editedContent;
                         return;
                     }
 
@@ -128,7 +129,7 @@
                     this.editedContent = this.content;
                     return;
 
-                    console.log(result);
+                    // console.log(result);
                 })
                 .catch(err => {
                     this.saving = false;
