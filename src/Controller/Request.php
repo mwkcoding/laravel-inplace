@@ -3,9 +3,9 @@
 namespace devsrv\inplace\Controller;
 
 use Illuminate\Http\Request as HTTPRequest;
-use devsrv\inplace\Exceptions\ModelException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Validator;
+use devsrv\inplace\Exceptions\{ ModelException, CustomEditableException };
 
 class Request {
     use AuthorizesRequests;
@@ -15,18 +15,24 @@ class Request {
 
     public $rules = 'required';
     public $shouldAuthorize = null;
+    public $saveusing = null;
 
     public $content;
 
     public function save(HTTPRequest $request) {
         $this->content = $request->content;
         $this->shouldAuthorize = is_null($request->authorize) ? null : (bool) $request->authorize;
+        $this->saveusing = $request->saveusing ?? null;
 
         $this->resolveModel($request->model, $request->column);
         $this->isAuthorized();
 
         $this->hydrateRules($request->rules);
         $this->validate();
+
+        if($this->saveusing) { return $this->customSave($this->model, $this->column, $this->content); }
+        
+        if(! $this->model) throw ModelException::missing();
 
         // db save success
         $this->model->{$this->column} = $this->content;
@@ -86,5 +92,31 @@ class Request {
         $globalAuthorize = config('inplace.authorize');
 
         if($globalAuthorize !== null && $globalAuthorize && $this->model) $this->authorize('update', $this->model);
+    }
+
+    protected function customSave($model, $column, $editedValue) {
+        if(! class_exists($this->saveusing)) { throw CustomEditableException::notFound($this->saveusing); }
+
+        $saveAs = new $this->saveusing;
+        
+        if(! is_callable([$saveAs, 'save'])) throw CustomEditableException::missing();
+
+        $status = ($saveAs)->save($model, $column, $editedValue);
+
+        if(! is_array($status) || !isset($status['success'])) {
+            throw CustomEditableException::badFormat();
+        }
+
+        if($status['success']) {
+            $this->value = $editedValue;
+            return [
+                'success' => 1
+            ];
+        }
+
+        return [
+            'success' => 0,
+            'message' => isset($status['message'])? $status['message'] : 'Error saving data!'
+        ];
     }
 }
