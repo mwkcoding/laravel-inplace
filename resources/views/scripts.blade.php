@@ -1,5 +1,3 @@
-@livewireScripts
-
 @production
 <script src="https://cdn.jsdelivr.net/gh/alpine-collective/alpine-magic-helpers@1.0.0/dist/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.1/dist/alpine.min.js" defer></script>
