@@ -49,8 +49,8 @@
     <div class="status">
         <p x-show="saving" class="spinner-light"></p>
 
-        <p x-show.transition.out.duration.1000ms="success">success</p>
-        <p x-show.transition.out.duration.1000ms="error">failed</p>
+        <p x-show.transition.out.duration.1000ms="success" class="ml-1">saved</p>
+        <p x-show.transition.out.duration.1000ms="error" class="ml-1">failed</p>
     </div>
 </div>
 
