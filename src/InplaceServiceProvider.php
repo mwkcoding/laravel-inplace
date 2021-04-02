@@ -26,6 +26,10 @@ class InplaceServiceProvider extends ServiceProvider
         ]);
 
         $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+
+        $this->publishes([
+            __DIR__.'/../public' => public_path('vendor/inplace'),
+        ], 'public');
     }
 
     /**

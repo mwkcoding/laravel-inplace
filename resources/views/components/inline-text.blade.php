@@ -1,3 +1,9 @@
+@push('inplace.component.style')
+@once
+<link rel="stylesheet" href="{{ asset('vendor/inplace/assets/css/loader/loader.min.css') }}" />
+@endonce
+@endpush
+
 <div class="editable" x-data="{
     ...inlineEditable(), 
     editedContent: `{{ $value }}`, 
@@ -41,7 +47,7 @@
     </div>
 
     <div class="status">
-        <p x-show="saving">saving . . .</p>
+        <p x-show="saving" class="spinner-light"></p>
 
         <p x-show.transition.out.duration.1000ms="success">success</p>
         <p x-show.transition.out.duration.1000ms="error">failed</p>
