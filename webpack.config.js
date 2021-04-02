@@ -2,7 +2,7 @@ const glob = require('glob');
 const path = require('path');
 
 module.exports = {
-    entry: glob.sync('./resources/js/**/index.js').reduce((acc, path) => {
+    entry: glob.sync('./resources/assets/js/**/index.js').reduce((acc, path) => {
         const entry = path.replace('/index.js', '')
         acc[entry] = path
         return acc
