@@ -4,7 +4,7 @@
 @endonce
 @endpush
 
-<div class="editable" x-data="{
+<div class="editable" x-cloak x-data="{
     ...inlineEditable(), 
     editedContent: `{{ $value }}`, 
     content: `{{ $value }}`,
@@ -49,9 +49,9 @@
     <div class="status">
         <p x-show="saving" class="spinner-light"></p>
 
-        <span x-ref="lottie-anim"></span>
-        <p x-show.transition.out.duration.1000ms="success" class="ml-1">saved</p>
-        <p x-show.transition.out.duration.1000ms="error" class="ml-1">failed</p>
+        <div x-ref="lottie-anim" class="lottie-check"></div>
+        {{-- <span x-show.transition.out.duration.1000ms="success" class="ml-1">saved</span> --}}
+        <span x-show.transition.out.duration.1000ms="error" class="ml-1">failed</span>
     </div>
 </div>
 
