@@ -47,7 +47,7 @@ window.inlineEditable = function () {
         playLottie() {
             this.lottie = lottieWeb.loadAnimation({
                 container: this.$refs['lottie-anim'],
-                path: "vendor/inplace/resources/lottie/check-okey-done.json",
+                path: "/vendor/inplace/resources/lottie/check-okey-done.json",
                 renderer: 'svg',
                 loop: false,
                 autoplay: true,
