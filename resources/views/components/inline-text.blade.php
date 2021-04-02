@@ -1,6 +1,6 @@
 @push('inplace.component.style')
 @once
-<link rel="stylesheet" href="{{ asset('vendor/inplace/assets/css/loader/loader.min.css') }}" />
+<link rel="stylesheet" href="{{ asset('vendor/inplace/resources/assets/css/loader/loader.min.css') }}" />
 @endonce
 @endpush
 
@@ -57,6 +57,6 @@
 
 @push('inplace.component.script')
 @once
-<script src="{{ asset('vendor/inplace/resources/js/inline/bundle.js') }}"></script>
+<script src="{{ asset('vendor/inplace/resources/assets/js/inline/bundle.js') }}"></script>
 @endonce
 @endpush
