@@ -1,6 +1,6 @@
 {
     "name": "devsrv/laravel-inplace",
-    "description": "test description",
+    "description": "inline edit with laravel blade components",
     "keywords": [
         "devsrv",
         "laravel-inplace",
