@@ -49,6 +49,7 @@
     <div class="status">
         <p x-show="saving" class="spinner-light"></p>
 
+        <span x-ref="lottie-anim"></span>
         <p x-show.transition.out.duration.1000ms="success" class="ml-1">saved</p>
         <p x-show.transition.out.duration.1000ms="error" class="ml-1">failed</p>
     </div>
@@ -56,6 +57,8 @@
 
 @push('inplace.component.script')
 @once
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.7/lottie.min.js" integrity="sha512-HDCfX3BneBQMfloBfluMQe6yio+OfXnbKAbI0SnfcZ4YfZL670nc52Aue1bBhgXa+QdWsBdhMVR2hYROljf+Fg==" crossorigin="anonymous"></script>
+
 <script>
     function inlineEditable() {
         return {
@@ -63,6 +66,7 @@
             saving: false,
             error: false,
             success: false,
+            lottie: null,
             onBoot(watch) {
                 watch('error', has => {
                     if(has) {
@@ -99,6 +103,19 @@
                     sel.addRange(range);
                 });
             },
+            playLottie() {
+                this.lottie = bodymovin.loadAnimation({
+                    container: this.$refs['lottie-anim'],
+                    path: 'https://assets9.lottiefiles.com/private_files/lf30_yo2zavgg.json',
+                    renderer: 'svg',
+                    loop: false,
+                    autoplay: true,
+                });
+
+                this.$nextTick(() => {
+                    this.lottie.addEventListener('complete', () => { this.lottie.destroy(); });
+                });
+            },
             handleSave() {
                 window.dispatchEvent(new CustomEvent("inplace-editable-progress", {
                     detail: { start: true }
@@ -132,6 +149,9 @@
                     if(Object.prototype.hasOwnProperty.call(result, 'success') && Number(result.success) === 1) {
                         this.success = true;
                         this.content = this.editedContent;
+
+                        this.playLottie();
+                        
                         return;
                     }
 
