@@ -210,3 +210,7 @@ Please see [CHANGELOG](CHANGELOG.md) for more information on what has changed re
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
+
+## 👋🏼 Say Hi! 
+Leave a ⭐ if you find this package useful 👍🏼,
+don't forget to let me know in [Twitter](https://twitter.com/srvrksh)  
