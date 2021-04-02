@@ -106,7 +106,7 @@
             playLottie() {
                 this.lottie = bodymovin.loadAnimation({
                     container: this.$refs['lottie-anim'],
-                    path: 'https://assets9.lottiefiles.com/private_files/lf30_yo2zavgg.json',
+                    path: "{{ asset('vendor/inplace/assets/lottie/check-okey-done.json') }}",
                     renderer: 'svg',
                     loop: false,
                     autoplay: true,
