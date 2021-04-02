@@ -47,7 +47,7 @@ window.inlineEditable = function () {
         playLottie() {
             this.lottie = lottieWeb.loadAnimation({
                 container: this.$refs['lottie-anim'],
-                path: "https://assets9.lottiefiles.com/private_files/lf30_yo2zavgg.json",
+                path: "vendor/inplace/resources/lottie/check-okey-done.json",
                 renderer: 'svg',
                 loop: false,
                 autoplay: true,
@@ -65,12 +65,12 @@ window.inlineEditable = function () {
             this.editing = false;
             this.saving = true;
 
-            fetch("http://127.0.0.1:8000/inplace/save", {
+            fetch(window._inplace.route, {
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
                     "X-Requested-With": "XMLHttpRequest",
-                    "X-CSRF-Token": ""
+                    "X-CSRF-Token": window._inplace.csrf_token
                 },
                 method: 'POST',
                 credentials: "same-origin",

@@ -57,6 +57,7 @@
 
 @push('inplace.component.script')
 @once
+<script>window._inplace = window._inplace || {};_inplace = {route: '{{ $save_route }}', csrf_token: '{{ $csrf_token }}'};</script>
 <script src="{{ asset('vendor/inplace/resources/assets/js/inline/bundle.js') }}"></script>
 @endonce
 @endpush
