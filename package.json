@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack serve --config webpack.config.js --progress --profile --hot --mode development",
-    "dev": "webpack --progress --profile --hot --mode development",
+    "dev": "webpack --watch --progress --profile --hot --mode development",
     "build": "webpack --mode production"
   },
   "repository": {
@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/devsrv/laravel-inplace#readme",
   "dependencies": {
+    "@babel/core": "^7.13.14",
     "@babel/preset-env": "^7.13.12",
     "@babel/preset-react": "^7.13.13",
     "babel-loader": "^8.2.2",
@@ -34,7 +35,5 @@
     "webpack-cli": "^4.6.0",
     "webpack-dev-server": "^3.11.2"
   },
-  "devDependencies": {
-    "@babel/core": "^7.13.14"
-  }
+  "devDependencies": {}
 }
