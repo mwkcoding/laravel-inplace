@@ -11,5 +11,6 @@ phpunit.xml
 psalm.xml
 testbench.yaml
 vendor
-public/dist/bundle.js.LICENSE.txt
-public/dist/main.*
+*.js.LICENSE.txt
+public/dist/*.json
+*.hot-update.js
