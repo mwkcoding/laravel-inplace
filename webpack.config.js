@@ -1,10 +1,15 @@
+const glob = require('glob');
 const path = require('path');
 
 module.exports = {
-    entry: './resources/js/index.js',
+    entry: glob.sync('./resources/js/**/index.js').reduce((acc, path) => {
+        const entry = path.replace('/index.js', '')
+        acc[entry] = path
+        return acc
+    }, {}),
     output: {
         path: path.resolve(__dirname, 'public/dist/'),
-        filename: 'bundle.js',
+        filename: './[name]/bundle.js',
         publicPath: ''
     },
     resolve: {
