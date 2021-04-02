@@ -13,7 +13,7 @@ This package provide set of blade components to make editing content exciting & 
 composer require devsrv/laravel-inplace
 ```
 
-### setup
+### Setup (_required_)
 
 include `@include('inplace::styles')` and `@include('inplace::scripts')` on every page where you'll be using the _inplace_ component
 
@@ -31,17 +31,16 @@ include `@include('inplace::styles')` and `@include('inplace::scripts')` on ever
 </html>
 ```
 
-### 💡 NOTE
+### Publishing Frontend Assets (_required_)
+```shell
+php artisan vendor:publish --tag=public
+```
 
-inplace uses [Alpine JS](https://github.com/alpinejs/alpine) and [Alpine Magic Helpers](https://github.com/alpine-collective/alpine-magic-helpers) internally, so if you are using Alpine in your application then follow the below setup method or else you'll get conflict errors
+##### 💡 NOTE :
+> when updating the package make sure to use the `--force` flag to keep the assets up-to-date i.e. 
+`php artisan vendor:publish --tag=public --force`
 
-
-- add the alpine magic helpers script before alpine -
-  1.  `<script src="https://cdn.jsdelivr.net/gh/alpine-collective/alpine-magic-helpers@1.0.0/dist/index.min.js"></script>`
-
-- add a `@stack('inplace.component.script')` directive at the end in the Footer for inplace scripts to be pushed properly
-
-### Publish config
+### Publish config (_optional_)
 
 `php artisan vendor:publish --provider="devsrv\inplace\InplaceServiceProvider"`
 
