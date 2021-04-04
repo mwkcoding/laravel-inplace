@@ -1,6 +1,7 @@
 import 'alpinejs';
 import lottieWeb from 'lottie-web';
 import lottieCheck from './../../lottie/check-okey-done.json';
+import lottieError from './../../lottie/error-cross.json';
 
 window.inlineEditable = function () {
     return {
@@ -9,6 +10,7 @@ window.inlineEditable = function () {
         error: false,
         success: false,
         lottie: null,
+        animatingNotify: false,
         onBoot(watch) {
             watch('error', has => {
                 if(has) {
@@ -29,8 +31,6 @@ window.inlineEditable = function () {
                     setTimeout(() => this.success = false, 1500);
                 }
             });
-
-            // require('./vendor/inplace/resources/lottie/check-okey-done.json');
         },
         initEdit() {
             this.editing = true;
@@ -47,17 +47,29 @@ window.inlineEditable = function () {
                 sel.addRange(range);
             });
         },
-        playLottie() {
-            this.lottie = lottieWeb.loadAnimation({
-                container: this.$refs['lottie-anim'],
-                animationData: lottieCheck,
-                renderer: 'svg',
-                loop: false,
-                autoplay: true,
-            });
+        playLottie(type = 'success') {
+            this.animatingNotify = true;
 
-            this.$nextTick(() => {
-                this.lottie.addEventListener('complete', () => { this.lottie.destroy(); });
+            return new  Promise(resolve => {
+                let lottieAnimate = type === 'success' ? lottieCheck : lottieError;
+
+                this.lottie = lottieWeb.loadAnimation({
+                    container: this.$refs['lottie-anim'],
+                    animationData: lottieAnimate,
+                    renderer: 'svg',
+                    loop: false,
+                    autoplay: true,
+                });
+
+                this.$nextTick(() => {
+                    this.lottie.addEventListener('complete', () => {
+                        this.lottie.destroy();
+
+                        this.animatingNotify = false;
+
+                        resolve();
+                    });
+                });
             });
         },
         handleSave() {
@@ -88,28 +100,35 @@ window.inlineEditable = function () {
             .then(res => res.json())
             .then(result => {
                 this.saving = false;
-                this.editing = false;
 
                 if(Object.prototype.hasOwnProperty.call(result, 'success') && Number(result.success) === 1) {
                     this.success = true;
                     this.content = this.editedContent;
 
-                    this.playLottie();
+                    this.playLottie('success').then(() => {
+
+                    });
                     
                     return;
                 }
 
                 this.error = true;
                 this.editedContent = this.content;
+
+                this.playLottie('error').then(() => {
+                });
+
                 return;
 
                 // console.log(result);
             })
             .catch(err => {
                 this.saving = false;
-                this.editing = false;
                 this.error = true;
                 this.editedContent = this.content;
+
+                this.playLottie('error').then(() => {
+                });
             })
             .finally(() => {
                 window.dispatchEvent(new CustomEvent("inplace-editable-progress", {
