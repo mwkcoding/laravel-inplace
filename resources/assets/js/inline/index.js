@@ -1,5 +1,6 @@
 import 'alpinejs';
 import lottieWeb from 'lottie-web';
+import lottieCheck from './../../lottie/check-okey-done.json';
 
 window.inlineEditable = function () {
     return {
@@ -28,6 +29,8 @@ window.inlineEditable = function () {
                     setTimeout(() => this.success = false, 1500);
                 }
             });
+
+            // require('./vendor/inplace/resources/lottie/check-okey-done.json');
         },
         initEdit() {
             this.editing = true;
@@ -47,7 +50,7 @@ window.inlineEditable = function () {
         playLottie() {
             this.lottie = lottieWeb.loadAnimation({
                 container: this.$refs['lottie-anim'],
-                path: "/vendor/inplace/resources/lottie/check-okey-done.json",
+                animationData: lottieCheck,
                 renderer: 'svg',
                 loop: false,
                 autoplay: true,
