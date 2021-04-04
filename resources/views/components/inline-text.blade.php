@@ -35,7 +35,7 @@
         @enderror --}}
     </div>
 
-    <div class="edit-control" x-show="!saving">
+    <div class="edit-control" x-show="!saving && !animatingNotify">
         <button @click="initEdit" x-show="!editing" type="button">edit</button>
 
         <template x-if="editing">
