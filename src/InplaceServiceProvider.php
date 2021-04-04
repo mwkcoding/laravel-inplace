@@ -29,7 +29,7 @@ class InplaceServiceProvider extends ServiceProvider
 
         $this->publishes([
             __DIR__.'/../public/dist' => public_path('vendor/inplace'),
-        ], 'public');
+        ], 'inplace');
     }
 
     /**
