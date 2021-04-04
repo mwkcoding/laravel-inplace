@@ -33,18 +33,21 @@ include `@include('inplace::styles')` and `@include('inplace::scripts')` on ever
 
 ### Publishing Frontend Assets (_required_)
 ```shell
-php artisan vendor:publish --tag=public
+php artisan vendor:publish --tag=inplace
 ```
 
 ##### 💡 NOTE :
 > when updating the package make sure to use the `--force` flag to keep the assets up-to-date i.e. 
-`php artisan vendor:publish --tag=public --force`
+> 
+> `php artisan vendor:publish --tag=inplace --force`
 
 ### Publish config (_optional_)
 
-`php artisan vendor:publish --provider="devsrv\inplace\InplaceServiceProvider"`
-
-this file includes an global `authorize` config value. setting this `true` will enforce laravel's policy authorization for all the inplace edit components, though you can override the global behaviour by passing an `authorize` (bool) attribute to your inplace component
+```shell
+php artisan vendor:publish --provider="devsrv\inplace\InplaceServiceProvider"
+```
+#### ✔️ authorize : 
+setting this `true` will enforce laravel's policy authorization for all the inplace edit components, though you can override the global behaviour by passing an `authorize` (bool) attribute to your inplace component
 
 ```php
 <x-inplace-component
@@ -55,6 +58,11 @@ this file includes an global `authorize` config value. setting this `true` will 
   Content to edit
 </x-inplace-component>
 ```
+
+#### ✔️ middleware : 
+add as many middlewares you with in the `middleware` array e.g.: `['auth', 'admin']`
+
+
 
 ## Guide
 
@@ -164,7 +172,7 @@ model="App\Models\User:name,1"
 ```
 refer [this example](https://github.com/devsrv/laravel-inplace-example/blob/3057161a1af84a2f9a9c215157f0e28c9edcb1c4/resources/views/welcome.blade.php#L33)
 
-### Bonus:
+### 🎁 Bonus:
 
 #### 1. **authorize manually:** 
 when passing custom class to save data you may choose to authorize the action from within your class using
@@ -199,7 +207,7 @@ class CustomSave
 
 refer this [example](https://github.com/devsrv/laravel-inplace-example/blob/9f6961485e8c6488e6ffa56c9ebb4e45686937ce/app/Http/Inplace/CustomSave.php#L30)
 
-#### 2. Listen events
+#### 2. 🔥 Listen events
 1. `inplace-editable-progress` custom `window` browser event diaptched after ajax start & ajax finished. refer to [example](https://github.com/devsrv/laravel-inplace-example/blob/3057161a1af84a2f9a9c215157f0e28c9edcb1c4/resources/views/app.blade.php#L58) for [NProgress](https://github.com/rstacruz/nprogress) Implementation
 2. `inplace-editable-finish` custom `window` browser event diaptched after content is either saved | failed by server. refer to [example](https://github.com/devsrv/laravel-inplace-example/blob/3057161a1af84a2f9a9c215157f0e28c9edcb1c4/resources/views/app.blade.php#L49) for a sample notifier system
 
