@@ -51,12 +51,12 @@
     </div>
 
     <template x-if="errorMessage">
-        <div x-ref="this">
-            <p class="inplace-error">
+        <div x-ref="this" class="inplace-errors-area">
+            <p class="inplace-error-main">
                 <span x-text="errorMessage"></span> <button type="button" @click="if($refs.this) $refs.this.remove()">X</button>
             </p>
 
-            <ul x-show="errorMessage.length">
+            <ul x-show="errorMessage.length" class="error-messages">
                 <template x-for="msg in validationErrors" :key="msg">
                     <li x-text="msg"></li>
                 </template>
