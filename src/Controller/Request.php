@@ -8,8 +8,9 @@ use Illuminate\Support\Facades\Validator;
 use devsrv\inplace\Exceptions\{ ModelException, CustomEditableException };
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
+use Illuminate\Routing\Controller;
 
-class Request {
+class Request extends Controller{
     use AuthorizesRequests;
 
     public $model = null;
@@ -20,6 +21,11 @@ class Request {
     public $saveusing = null;
 
     public $content;
+
+    public function __construct() {
+        $middlewares = config('inplace.middleware');
+        if($middlewares !== null) $this->middleware($middlewares);
+    }
 
     public function save(HTTPRequest $request) {
         $this->content = $request->content;
