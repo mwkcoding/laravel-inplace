@@ -2,4 +2,5 @@
 [x-cloak] {
     display: none !important;
 }
-.lottie-check{width: 45px;}
+.lottie-box{width: 44px;}
+.lottie-sm{width: 35px !important;}
