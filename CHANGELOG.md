@@ -20,6 +20,10 @@
 
 ## 1.1.2 - 2021-04-04
 
+- lottie json path missing fix
+
+## 1.1.3 - 2021-04-04
+
 - support for middlewares via published config
 - lottie animation for success & failed saving states
 - error messages notification & validation errors list when 422
