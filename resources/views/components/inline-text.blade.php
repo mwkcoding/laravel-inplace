@@ -47,7 +47,7 @@
     </div>
 
     <div class="status">
-        <p x-show="saving" class="spinner-light"></p>
+        <div class="spinner-light"></div>
 
         <div x-ref="lottie-anim" class="lottie-check"></div>
         {{-- <span x-show.transition.out.duration.1000ms="success" class="ml-1">saved</span> --}}
