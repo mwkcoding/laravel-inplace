@@ -17,3 +17,9 @@
 - alpine used as npm module
 - no conflict with user's alpine / alpine magic helpers as all inplace script is bundled
 - lottie animation support for success notification
+
+## 1.1.2 - 2021-04-04
+
+- support for middlewares via published config
+- lottie animation for success & failed saving states
+- error messages notification & validation errors list when 422
