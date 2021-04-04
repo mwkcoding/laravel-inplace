@@ -4,7 +4,7 @@
 @endonce
 @endpush
 
-<div class="editable" x-cloak x-data="{
+<div class="inplace-container" x-cloak x-data="{
     ...inlineEditable(), 
     editedContent: `{{ $value }}`, 
     content: `{{ $value }}`,
@@ -13,55 +13,56 @@
     saveusing: '{{ $saveusing }}',
     rules: {!! str_replace('"', '\'', e(json_encode($validation))) !!}
 }" x-init="onBoot($watch)">
-    <div class="content">
-        <x-dynamic-component
-            :component="$renderAs"
-            @input="trackEdit($event)"
-            @keydown.escape="handleCancel"
-            @keydown.enter.stop.prevent="editedContent && content !== editedContent ? handleSave() : null"
-            x-ref="field"
-            ::contenteditable="editing"
-            x-text="editedContent"
-            class="edit-target"
-            :prepend="$prepend"
-            :append="$append"
-            value="$value"
-        />
+    <div class="editable">
+        <div class="content">
+            <x-dynamic-component
+                :component="$renderAs"
+                @input="trackEdit($event)"
+                @keydown.escape="handleCancel"
+                @keydown.enter.stop.prevent="editedContent && content !== editedContent ? handleSave() : null"
+                x-ref="field"
+                ::contenteditable="editing"
+                x-text="editedContent"
+                class="edit-target"
+                :prepend="$prepend"
+                :append="$append"
+                value="$value"
+            />
+        </div>
 
-        <template x-if="errorMessage">
-            <div x-ref="this">
-                <p class="inplace-error">
-                    <span x-text="errorMessage"></span> <button type="button" @click="if($refs.this) $refs.this.remove()">X</button>
-                </p>
+        <div class="edit-control" x-show="!saving && !animatingNotify">
+            <button @click="initEdit" x-show="!editing" type="button">edit</button>
 
-                <ul x-show="errorMessage.length">
-                    <template x-for="msg in validationErrors" :key="msg">
-                        <li x-text="msg"></li>
-                    </template>
-                </ul>
-            </div>
-        </template>
-        
+            <template x-if="editing">
+                <div>
+                    <button x-show="editedContent && content !== editedContent" @click="handleSave" type="button">save</button>
+                    <button @click="handleCancel" type="button">close</button>
+                </div>
+            </template>
+        </div>
+
+        <div class="status">
+            <div x-show="saving" class="spinner-light"></div>
+
+            <div x-ref="lottie-anim" class="lottie-box"></div>
+            {{-- <span x-show.transition.out.duration.1000ms="success" class="ml-1">saved</span> --}}
+            {{-- <span x-show.transition.out.duration.1000ms="error" class="ml-1">failed</span> --}}
+        </div>
     </div>
 
-    <div class="edit-control" x-show="!saving && !animatingNotify">
-        <button @click="initEdit" x-show="!editing" type="button">edit</button>
+    <template x-if="errorMessage">
+        <div x-ref="this">
+            <p class="inplace-error">
+                <span x-text="errorMessage"></span> <button type="button" @click="if($refs.this) $refs.this.remove()">X</button>
+            </p>
 
-        <template x-if="editing">
-            <div>
-                <button x-show="editedContent && content !== editedContent" @click="handleSave" type="button">save</button>
-                <button @click="handleCancel" type="button">close</button>
-            </div>
-        </template>
-    </div>
-
-    <div class="status">
-        <div x-show="saving" class="spinner-light"></div>
-
-        <div x-ref="lottie-anim" class="lottie-box"></div>
-        {{-- <span x-show.transition.out.duration.1000ms="success" class="ml-1">saved</span> --}}
-        {{-- <span x-show.transition.out.duration.1000ms="error" class="ml-1">failed</span> --}}
-    </div>
+            <ul x-show="errorMessage.length">
+                <template x-for="msg in validationErrors" :key="msg">
+                    <li x-text="msg"></li>
+                </template>
+            </ul>
+        </div>
+    </template>
 </div>
 
 @push('inplace.component.script')
