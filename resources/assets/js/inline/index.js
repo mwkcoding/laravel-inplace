@@ -59,6 +59,9 @@ window.inlineEditable = function () {
                     renderer: 'svg',
                     loop: false,
                     autoplay: true,
+                    rendererSettings: {
+                        className: type !== 'success' ? 'lottie-sm' : '',
+                    }
                 });
 
                 this.$nextTick(() => {
