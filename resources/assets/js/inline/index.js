@@ -9,6 +9,8 @@ window.inlineEditable = function () {
         saving: false,
         error: false,
         success: false,
+        errorMessage: '',
+        validationErrors: [],
         lottie: null,
         animatingNotify: false,
         onBoot(watch) {
@@ -34,6 +36,8 @@ window.inlineEditable = function () {
         },
         initEdit() {
             this.editing = true;
+            this.errorMessage = '';
+            this.validationErrors = [];
 
             this.$nextTick(() => {
                 this.$refs.field.focus();
@@ -81,6 +85,8 @@ window.inlineEditable = function () {
             }));
 
             this.editing = false;
+            this.errorMessage = '';
+            this.validationErrors = [];
             this.saving = true;
 
             fetch(window._inplace.route, {
@@ -100,7 +106,13 @@ window.inlineEditable = function () {
                     saveusing: this.saveusing,
                 })
             })
-            .then(res => res.json())
+            .then(res => {
+                if(res.status === 422) this.errorMessage = 'Validation Error !';
+                else if(res.status === 403) this.errorMessage = 'Permission restricted !';
+                else if(res.status >= 500) this.errorMessage = 'Server Error !';
+
+                return res.json();
+            })
             .then(result => {
                 this.saving = false;
 
@@ -118,17 +130,23 @@ window.inlineEditable = function () {
                 this.error = true;
                 this.editedContent = this.content;
 
+                if(this.errorMessage.length === 0)
+                this.errorMessage = Object.prototype.hasOwnProperty.call(result, 'message') ? result.message : 'Error saving content !';
+
+                // if validation error show em all
+                if(Object.prototype.hasOwnProperty.call(result, 'errors'))
+                this.validationErrors = Object.entries(result.errors)[0][1];
+
                 this.playLottie('error').then(() => {
                 });
 
                 return;
-
-                // console.log(result);
             })
             .catch(err => {
                 this.saving = false;
                 this.error = true;
                 this.editedContent = this.content;
+                this.errorMessage = 'Error saving content !';
 
                 this.playLottie('error').then(() => {
                 });

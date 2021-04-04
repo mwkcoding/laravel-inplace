@@ -28,11 +28,20 @@
             value="$value"
         />
 
-        {{-- @error('editedValue')
-            <span class="error" x-data="{open: true}" x-show="open" x-ref="this">
-                {{ $message }} <button type="button" @click="if($refs.this) $refs.this.remove()">X</button>
-            </span>
-        @enderror --}}
+        <template x-if="errorMessage">
+            <div x-ref="this">
+                <p class="inplace-error">
+                    <span x-text="errorMessage"></span> <button type="button" @click="if($refs.this) $refs.this.remove()">X</button>
+                </p>
+
+                <ul x-show="errorMessage.length">
+                    <template x-for="msg in validationErrors" :key="msg">
+                        <li x-text="msg"></li>
+                    </template>
+                </ul>
+            </div>
+        </template>
+        
     </div>
 
     <div class="edit-control" x-show="!saving && !animatingNotify">
