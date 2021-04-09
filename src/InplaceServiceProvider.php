@@ -5,6 +5,7 @@ namespace devsrv\inplace;
 use Illuminate\Support\ServiceProvider;
 use devsrv\inplace\Components\{
     Component,
+    Relation,
     InlineBasicCommon,
     InlineText,
 };
@@ -19,6 +20,7 @@ class InplaceServiceProvider extends ServiceProvider
             Component::class,
             InlineBasicCommon::class,
             InlineText::class,
+            Relation::class,
         ]);
 
         $this->publishes([
