@@ -6,9 +6,9 @@ use InvalidArgumentException;
 
 class ModelException extends InvalidArgumentException
 {
-    public static function badFormat()
+    public static function badFormat($msg = '')
     {
-        return new static("Incorrect model attribute format, expected namespace\Model:column,key");
+        return new static("Incorrect model attribute format, expected ". $msg);
     }
 
     public static function notFound(string $path)

@@ -70,7 +70,7 @@ class Request extends Controller{
                 [$modelClass, $colWithKey] = explode(':', $model);
                 [$column, $primaryKey] = explode(',', $colWithKey);
             } catch (\Exception $th) {
-                throw ModelException::badFormat();
+                throw ModelException::badFormat('namespace\Model:column,key');
             }
             
             if(! class_exists($modelClass)) throw ModelException::notFound($modelClass);
