@@ -14,6 +14,7 @@ class Relation extends ViewComponent
     public $relationColumn;
     public $relationPrimaryKey;
     public $validation;
+    public $thumbnailed;
 
     const SUPPORTED_RELATIONS = [
         'BelongsToMany'
@@ -27,7 +28,7 @@ class Relation extends ViewComponent
      *
      * @return void
      */
-    public function __construct($model, $relationName, $relationColumn, $authorize = null, $validation = null, $withQuery = null)
+    public function __construct($model, $relationName, $relationColumn, $authorize = null, $validation = null, $withQuery = null, $thumbnailed = false)
     {
         [$relation, $relatedModel] = $this->validate($model, $relationName);
 
@@ -37,6 +38,7 @@ class Relation extends ViewComponent
         $this->relationPrimaryKey = $relatedModel->getKeyName();
         $this->validation = $validation;
         $this->authorize = $authorize;
+        $this->thumbnailed = $thumbnailed;
 
         $this->options = $this->deriveOptions($relatedModel, $relationColumn, $withQuery);
         $this->currentValues = $relation->get()->pluck($this->relationPrimaryKey)->all();
