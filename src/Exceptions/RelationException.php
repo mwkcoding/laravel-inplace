@@ -6,6 +6,11 @@ use InvalidArgumentException;
 
 class RelationException extends InvalidArgumentException
 {
+    public static function missing(string $message)
+    {
+        return new static($message);
+    }
+
     public static function notFound(string $model, string $name)
     {
         return new static("Relation `{$name}` not found on Model `{$model}`");
