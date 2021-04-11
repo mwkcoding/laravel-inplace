@@ -4,7 +4,7 @@
 @endonce
 @endpush
 
-{!! $print !!}
+{!! $renderValue !!}
 
 <ul>
     @foreach ($options as $option)

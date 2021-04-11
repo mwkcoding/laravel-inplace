@@ -21,8 +21,12 @@ class Relation extends ViewComponent
     public $thumbnailed;
     public $thumbnailWidth;
     public $resolveThumbnail = null;
-    public $print;
+    public $renderValue;
     public $renderTemplate;
+
+    private $relation;
+    private $relatedModel;
+    private $filterOptionsQuery;
 
     const SUPPORTED_RELATIONS = [
         'BelongsToMany'
@@ -44,6 +48,10 @@ class Relation extends ViewComponent
         else {
             $this->resolveConfigUsingAttributes($model, $relationName, $relationColumn, $authorize, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $renderTemplate);
         }
+
+        $this->model = Crypt::encryptString($model);
+        $this->options = $this->deriveOptions($this->relatedModel, $this->relationColumn, $this->filterOptionsQuery);
+        $this->currentValues = $this->relation->get()->pluck($this->relationPrimaryKey)->all();
     }
 
     private function resolveConfigUsingID(string $id, $model) {
@@ -57,24 +65,25 @@ class Relation extends ViewComponent
         throw_if(is_null($relationManager), ConfigException::missing($id));
         
         [$relation, $relatedModel] = $this->validate($model, $relationManager->relationName);
-        $this->model = Crypt::encryptString($model);
+
+        $this->relatedModel = $relatedModel;
+        $this->relation = $relation;
         $this->relationPrimaryKey = $relatedModel->getKeyName();
         $this->relationColumn = $relationManager->column;
+        $this->filterOptionsQuery = $relationManager->filterOptionsQuery;
 
-        $this->options = $this->deriveOptions($relatedModel, $relationManager->column, $relationManager->filterOptionsQuery);
-        $this->currentValues = $relation->get()->pluck($this->relationPrimaryKey)->all();
         $this->thumbnailed = $relationManager->thumbnail;
         $this->thumbnailWidth = $relationManager->thumbnailWidth;
         $this->resolveThumbnail = $relationManager->resolveThumbnailUsing;
 
         if($relationManager->renderPartial) {
-            $this->print = $this->renderUsingPartial($relation, $relationManager->renderPartial, $relationManager->renderQuery);
+            $this->renderValue = $this->renderUsingPartial($relation, $relationManager->renderPartial, $relationManager->renderQuery);
         }
         else if($relationManager->renderUsing) {
-            $this->print = $this->renderUsingClosure($relation, $relationManager->renderUsing);
+            $this->renderValue = $this->renderUsingClosure($relation, $relationManager->renderUsing);
         }
         else {
-            $this->print = $this->renderDefault($relation, $relationManager->column);
+            $this->renderValue = $this->renderDefault($relation, $relationManager->column);
         }
     }
 
@@ -84,27 +93,27 @@ class Relation extends ViewComponent
 
         [$relation, $relatedModel] = $this->validate($model, $relationName);
 
-        $this->model = Crypt::encryptString($model);
+        $this->relation = $relation;
         $this->relationName = Crypt::encryptString($relationName);
+        $this->relatedModel = $relatedModel;
         $this->relationColumn = $relationColumn;
         $this->relationPrimaryKey = $relatedModel->getKeyName();
         $this->validation = $validation;
         $this->authorize = $authorize;
         $this->thumbnailed = $thumbnailed;
         $this->thumbnailWidth = $thumbnailWidth;
+        $this->filterOptionsQuery = $filterOptions;
 
-        $this->print = $renderTemplate? $this->renderUsingPartial($relation, $renderTemplate) : $this->renderDefault($relation, $relationColumn);
-        $this->options = $this->deriveOptions($relatedModel, $relationColumn, $filterOptions);
-        $this->currentValues = $relation->get()->pluck($this->relationPrimaryKey)->all();
+        $this->renderValue = $renderTemplate? $this->renderUsingPartial($relation, $renderTemplate) : $this->renderDefault($relation, $relationColumn);
     }
 
     private function renderUsingPartial($relation, $partial, $mergeQuery = null) {
-        $query = is_callable($mergeQuery) ? $mergeQuery($relation) : $relation;
+        $query = is_callable($mergeQuery) ? $mergeQuery(clone $relation) : $relation;
         return view($partial, ['items' => $query->get()]);
     }
 
     private function renderUsingClosure($relation, callable $mergeQuery) {
-        return $mergeQuery($relation);
+        return $mergeQuery(clone $relation);
     }
 
     private function renderDefault($relation, $relationColumn) {
