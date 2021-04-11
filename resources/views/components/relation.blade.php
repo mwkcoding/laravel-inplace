@@ -4,11 +4,13 @@
 @endonce
 @endpush
 
+{!! $print !!}
+
 <ul>
     @foreach ($options as $option)
         <li>
-            @if($thumbnailed && method_exists($option, 'inplaceThumb'))
-                <img src="{{ $option->inplaceThumb() }}" width="{{ $attributes->has('thumbnail-width') ? $attributes->get('thumbnail-width') : '30' }}" alt="avatar" />
+            @if($thumbnailed)
+                <img src="{{ $resolveThumbnail($option) }}" width="{{ $thumbnailWidth }}" alt="avatar" />
             @endif
 
             <input type="checkbox" name="" value="{{ $option->getAttributeValue($relationPrimaryKey) }}" id="" {{ isset($currentValues) && in_array($option->getAttributeValue($relationPrimaryKey), $currentValues) ? 'checked' : '' }} />
