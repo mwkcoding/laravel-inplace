@@ -5,6 +5,7 @@ namespace devsrv\inplace\Components;
 use Illuminate\View\Component as ViewComponent;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Database\Eloquent\Relations\Relation as EloquentRelation;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use devsrv\inplace\Exceptions\{ ModelException, RelationException, ConfigException };
 use devsrv\inplace\InplaceConfig;
@@ -24,6 +25,7 @@ class Relation extends ViewComponent
     public $renderValue;
     public $renderTemplate;
 
+    private $modelFormatted;
     private $relation;
     private $relatedModel;
     private $filterOptionsQuery;
@@ -49,7 +51,7 @@ class Relation extends ViewComponent
             $this->resolveConfigUsingAttributes($model, $relationName, $relationColumn, $authorize, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $renderTemplate);
         }
 
-        $this->model = Crypt::encryptString($model);
+        $this->model = Crypt::encryptString($this->modelFormatted);
         $this->options = $this->deriveOptions($this->relatedModel, $this->relationColumn, $this->filterOptionsQuery);
         $this->currentValues = $this->relation->get()->pluck($this->relationPrimaryKey)->all();
     }
@@ -64,8 +66,9 @@ class Relation extends ViewComponent
         $relationManager = $config::getRelationEditor($id);
         throw_if(is_null($relationManager), ConfigException::missing($id));
         
-        [$relation, $relatedModel] = $this->validate($model, $relationManager->relationName);
+        [$modelFormatted, $relation, $relatedModel] = $this->validate($model, $relationManager->relationName);
 
+        $this->modelFormatted = $modelFormatted;
         $this->relatedModel = $relatedModel;
         $this->relation = $relation;
         $this->relationPrimaryKey = $relatedModel->getKeyName();
@@ -91,8 +94,9 @@ class Relation extends ViewComponent
         throw_if(is_null($relationName), RelationException::missing('relation name required'));
         throw_if(is_null($relationColumn), RelationException::missing('relation column required'));
 
-        [$relation, $relatedModel] = $this->validate($model, $relationName);
+        [$modelFormatted, $relation, $relatedModel] = $this->validate($model, $relationName);
 
+        $this->modelFormatted = $modelFormatted;
         $this->relation = $relation;
         $this->relationName = Crypt::encryptString($relationName);
         $this->relatedModel = $relatedModel;
@@ -122,13 +126,19 @@ class Relation extends ViewComponent
 
     private function validate($model, $relationName)
     {
-        try {
-            [$modelClass, $primaryKey] = explode(':', $model);
-        } catch (\Exception $th) {
-            throw ModelException::badFormat('namespace\Model:key');
+        if($model instanceof Model) {
+            $modelClass = get_class($model);
+            $primaryKey = $model->getKey();
         }
-        
-        if(! class_exists($modelClass)) throw ModelException::notFound($modelClass);
+        else {
+            try {
+                [$modelClass, $primaryKey] = explode(':', $model);
+            } catch (\Exception $th) {
+                throw ModelException::badFormat('namespace\Model:key or Model object');
+            }
+            
+            if(! class_exists($modelClass)) throw ModelException::notFound($modelClass);
+        }
 
         $parentModel = $modelClass::findOrFail($primaryKey);
 
@@ -141,7 +151,9 @@ class Relation extends ViewComponent
 
         throw_unless(in_array(class_basename($relation), self::SUPPORTED_RELATIONS), RelationException::notSupported($relationName));
 
-        return [$relation, $relatedModel];
+        $modelString = $modelClass.':'.$primaryKey;
+
+        return [$modelString, $relation, $relatedModel];
     }
 
     private function deriveOptions($relatedModel, $relationColumn, $withQuery) {
