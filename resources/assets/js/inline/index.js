@@ -102,6 +102,7 @@ window.inlineEditable = function () {
                     content: this.editedContent,
                     authorize: this.authorize,
                     model: this.model,
+                    column: this.column,
                     rules: this.rules,
                     saveusing: this.saveusing,
                 })
