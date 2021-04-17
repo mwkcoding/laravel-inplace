@@ -99,6 +99,7 @@ window.inlineEditable = function () {
                 method: 'POST',
                 credentials: "same-origin",
                 body: JSON.stringify({
+                    id: this.id,
                     content: this.editedContent,
                     authorize: this.authorize,
                     model: this.model,
