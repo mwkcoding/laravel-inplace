@@ -12,6 +12,7 @@
     content: `{{ $value }}`,
     authorize: '{{ $authorize === null ? null : ((bool) $authorize === true ? 1 : 0) }}',
     model: '{{ $model }}',
+    column: '{{ $column }}',
     saveusing: '{{ $saveusing }}',
     rules: {!! str_replace('"', '\'', e(json_encode($validation))) !!}
 }" x-init="onBoot($watch)">
@@ -70,7 +71,6 @@
 @push('inplace.component.script')
 @once
 <script>window._inplace = window._inplace || {};_inplace = {route: '{{ $save_route }}', csrf_token: '{{ $csrf_token }}'};</script>
-{{-- <script src="{{ asset('vendor/inplace/resources/assets/js/inline/bundle.js') }}"></script> --}}
-<script src="{{ asset('vendor/linked/js/inline/bundle.js') }}"></script>
+<script src="{{ asset('vendor/inplace/resources/assets/js/inline/bundle.js') }}"></script>
 @endonce
 @endpush
