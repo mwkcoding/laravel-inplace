@@ -9,9 +9,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use devsrv\inplace\Exceptions\{ ModelException, RelationException, ConfigException };
 use devsrv\inplace\InplaceConfig;
+use devsrv\inplace\Traits\ResolveModel;
 
 class Relation extends ViewComponent
 {
+    use ResolveModel;
+
     public $id;
     public $authorize;
     public $model;
@@ -126,21 +129,11 @@ class Relation extends ViewComponent
 
     private function validate($model, $relationName)
     {
-        if($model instanceof Model) {
-            $modelClass = get_class($model);
-            $primaryKey = $model->getKey();
-        }
-        else {
-            try {
-                [$modelClass, $primaryKey] = explode(':', $model);
-            } catch (\Exception $th) {
-                throw ModelException::badFormat('namespace\Model:key or Model object');
-            }
-            
-            if(! class_exists($modelClass)) throw ModelException::notFound($modelClass);
-        }
+        $modelString = $this->resolveModel($model);
 
-        $parentModel = $modelClass::findOrFail($primaryKey);
+        [$modelClass, $primaryKeyValue] = explode(':', $modelString);
+
+        $parentModel = $modelClass::findOrFail($primaryKeyValue);
 
         try {
             $relation = $parentModel->{$relationName}();
@@ -150,8 +143,6 @@ class Relation extends ViewComponent
         }
 
         throw_unless(in_array(class_basename($relation), self::SUPPORTED_RELATIONS), RelationException::notSupported($relationName));
-
-        $modelString = $modelClass.':'.$primaryKey;
 
         return [$modelString, $relation, $relatedModel];
     }
