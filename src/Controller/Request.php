@@ -41,7 +41,7 @@ class Request extends Controller{
 
         if($this->saveusing) { return $this->customSave($this->model, $this->column, $this->content); }
         
-        if(! $this->model) throw ModelException::missing();
+        if(! $this->model || ! $this->column) throw ModelException::missing();
 
         // db save success
         $this->model->{$this->column} = $this->content;
@@ -58,7 +58,7 @@ class Request extends Controller{
         ];
     }
 
-    private function resolveModel($model_encrypted, $column) {
+    private function resolveModel($model_encrypted, $column_encrypted) {
         if($model_encrypted) {
             try {
                 $model = Crypt::decryptString($model_encrypted);
@@ -67,16 +67,22 @@ class Request extends Controller{
             }
 
             try {
-                [$modelClass, $colWithKey] = explode(':', $model);
-                [$column, $primaryKey] = explode(',', $colWithKey);
+                [$modelClass, $primaryKeyValue] = explode(':', $model);
             } catch (\Exception $th) {
-                throw ModelException::badFormat('namespace\Model:column,key');
+                throw ModelException::badFormat('namespace\Model:key');
             }
             
             if(! class_exists($modelClass)) throw ModelException::notFound($modelClass);
 
-            $this->model = $modelClass::findOrFail($primaryKey);
-            $this->column = $column;
+            $this->model = $modelClass::findOrFail($primaryKeyValue);
+        }
+
+        if($column_encrypted) {
+            try {
+                $this->column = Crypt::decryptString($column_encrypted);
+            } catch (DecryptException $e) {
+                throw $e;
+            }
         }
     }
 
