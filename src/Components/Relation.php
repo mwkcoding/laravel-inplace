@@ -4,16 +4,12 @@ namespace devsrv\inplace\Components;
 
 use Illuminate\View\Component as ViewComponent;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Database\Eloquent\Relations\Relation as EloquentRelation;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Contracts\Container\BindingResolutionException;
-use devsrv\inplace\Exceptions\{ ModelException, RelationException, ConfigException };
-use devsrv\inplace\InplaceConfig;
-use devsrv\inplace\Traits\ResolveModel;
+use devsrv\inplace\Exceptions\RelationException;
+use devsrv\inplace\Traits\{ ModelResolver, ConfigResolver };
 
 class Relation extends ViewComponent
 {
-    use ResolveModel;
+    use ModelResolver, ConfigResolver;
 
     public $id;
     public $authorize;
@@ -60,14 +56,7 @@ class Relation extends ViewComponent
     }
 
     private function resolveConfigUsingID(string $id, $model) {
-        try {
-            $config = app()->make(InplaceConfig::class);
-        } catch (BindingResolutionException $th) {
-            throw ConfigException::notFound();
-        }
-
-        $relationManager = $config::getRelationEditor($id);
-        throw_if(is_null($relationManager), ConfigException::missing($id));
+        $relationManager = self::getConfig('relation', $id);
         
         [$modelFormatted, $relation, $relatedModel] = $this->validate($model, $relationManager->relationName);
 
