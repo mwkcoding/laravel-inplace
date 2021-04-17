@@ -109,7 +109,7 @@ window.inlineEditable = function () {
             .then(res => {
                 if(res.status === 422) this.errorMessage = 'Validation Error !';
                 else if(res.status === 403) this.errorMessage = 'Permission restricted !';
-                else if(res.status >= 500) this.errorMessage = 'Server Error !';
+                else if(res.status >= 500) this.errorMessage = 'Error saving content !';
 
                 return res.json();
             })
@@ -130,8 +130,7 @@ window.inlineEditable = function () {
                 this.error = true;
                 this.editedContent = this.content;
 
-                if(this.errorMessage.length === 0)
-                this.errorMessage = Object.prototype.hasOwnProperty.call(result, 'message') ? result.message : 'Error saving content !';
+                this.errorMessage += Object.prototype.hasOwnProperty.call(result, 'message') && ' '+ result.message;
 
                 // if validation error show em all
                 if(Object.prototype.hasOwnProperty.call(result, 'errors'))
