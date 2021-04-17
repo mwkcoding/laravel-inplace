@@ -9,34 +9,74 @@ use devsrv\inplace\Exceptions\{ ModelException, CustomEditableException };
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Routing\Controller;
+use devsrv\inplace\Traits\{ ConfigResolver, ModelResolver };
 
 class Request extends Controller{
-    use AuthorizesRequests;
+    use AuthorizesRequests, ConfigResolver, ModelResolver;
 
+    public $id = null;
     public $model = null;
     public $column = null;
+    public $inlineEditor = null;
 
     public $rules = 'required';
-    public $shouldAuthorize = null;
+    public $allowed = null;
     public $saveusing = null;
 
     public $content;
 
     public function __construct() {
+        $this->hydrate();
+
+        $this->applyMiddleware();
+    }
+
+    private function hydrate()
+    {
+        $this->content = request('content');
+        $this->resolveModelColumn(request('model'), request('column'));
+
+        if(request()->filled('id')) {
+            try {
+                $id = Crypt::decryptString(request('id'));
+            } catch (DecryptException $e) {
+                throw $e;
+            }
+
+            $this->inlineEditor = self::getConfig('inline', $id);
+            $this->column = $this->inlineEditor->column;
+            $this->saveusing = $this->inlineEditor->saveUsingClass;
+            $this->rules = $this->inlineEditor->rules;
+            $this->allowed = $this->inlineEditor->authorize;
+
+            return;
+        }
+
+        $this->allowed = request()->filled('authorize') ? (bool) request('authorize') : null;
+        $this->hydrateSaveUsing(request('saveusing'));
+        $this->hydrateRules(request('rules'));
+    }
+
+    private function applyMiddleware() 
+    {
+        // if has field config
+        if($this->inlineEditor) {
+            if(! $this->inlineEditor->applyMiddleware) return;
+
+            if($this->inlineEditor->middlewares) {
+                $this->middleware($this->inlineEditor->middlewares);
+                return;
+            }
+        }
+
+        // fallback to default i.e. apply any global config middlewares
         $middlewares = config('inplace.middleware');
         if($middlewares !== null) $this->middleware($middlewares);
     }
 
     public function save(HTTPRequest $request) {
-        $this->content = $request->content;
-        $this->shouldAuthorize = is_null($request->authorize) ? null : (bool) $request->authorize;
-
-        $this->hydrateSaveUsing($request->saveusing);
-
-        $this->resolveModel($request->model, $request->column);
         $this->isAuthorized();
 
-        $this->hydrateRules($request->rules);
         $this->validate();
 
         if($this->saveusing) { return $this->customSave($this->model, $this->column, $this->content); }
@@ -58,23 +98,9 @@ class Request extends Controller{
         ];
     }
 
-    private function resolveModel($model_encrypted, $column_encrypted) {
+    private function resolveModelColumn($model_encrypted, $column_encrypted) {
         if($model_encrypted) {
-            try {
-                $model = Crypt::decryptString($model_encrypted);
-            } catch (DecryptException $e) {
-                throw $e;
-            }
-
-            try {
-                [$modelClass, $primaryKeyValue] = explode(':', $model);
-            } catch (\Exception $th) {
-                throw ModelException::badFormat('namespace\Model:key');
-            }
-            
-            if(! class_exists($modelClass)) throw ModelException::notFound($modelClass);
-
-            $this->model = $modelClass::findOrFail($primaryKeyValue);
+            $this->model = $this->decryptModel($model_encrypted);
         }
 
         if($column_encrypted) {
@@ -105,9 +131,9 @@ class Request extends Controller{
     }
 
     protected function isAuthorized() {
-        if($this->shouldAuthorize !== null) {
-            if($this->shouldAuthorize && $this->model) { $this->authorize('update', $this->model); }
-            else return true;
+        if($this->allowed !== null) {
+            abort_unless($this->allowed, 403, 'unauthorized');
+            return;
         }
 
         $globalAuthorize = config('inplace.authorize');
