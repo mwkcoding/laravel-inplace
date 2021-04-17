@@ -4,10 +4,9 @@ namespace devsrv\inplace;
 
 use Illuminate\Support\ServiceProvider;
 use devsrv\inplace\Components\{
-    Component,
     Relation,
     InlineBasicCommon,
-    InlineText,
+    Inline,
 };
 
 class InplaceServiceProvider extends ServiceProvider
@@ -17,9 +16,8 @@ class InplaceServiceProvider extends ServiceProvider
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'inplace');
 
         $this->loadViewComponentsAs('inplace', [
-            Component::class,
             InlineBasicCommon::class,
-            InlineText::class,
+            Inline::class,
             Relation::class,
         ]);
 

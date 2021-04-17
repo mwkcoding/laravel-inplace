@@ -4,11 +4,13 @@
 @endonce
 @endpush
 
+@php $value ??= $slot->toHtml(); @endphp
+
 <div class="inplace-container" x-cloak x-data="{
     ...inlineEditable(), 
     editedContent: `{{ $value }}`, 
     content: `{{ $value }}`,
-    authorize: '{{ $shouldAuthorize === null ? null : ((bool) $shouldAuthorize === true ? 1 : 0) }}',
+    authorize: '{{ $authorize === null ? null : ((bool) $authorize === true ? 1 : 0) }}',
     model: '{{ $model }}',
     saveusing: '{{ $saveusing }}',
     rules: {!! str_replace('"', '\'', e(json_encode($validation))) !!}
@@ -24,8 +26,8 @@
                 ::contenteditable="editing"
                 x-text="editedContent"
                 class="edit-target"
-                :prepend="$prepend"
-                :append="$append"
+                :prepend="isset($before)? htmlentities(serialize($before)) : null"
+                :append="isset($after)? htmlentities(serialize($after)) : null"
                 value="$value"
             />
         </div>
@@ -68,6 +70,7 @@
 @push('inplace.component.script')
 @once
 <script>window._inplace = window._inplace || {};_inplace = {route: '{{ $save_route }}', csrf_token: '{{ $csrf_token }}'};</script>
-<script src="{{ asset('vendor/inplace/resources/assets/js/inline/bundle.js') }}"></script>
+{{-- <script src="{{ asset('vendor/inplace/resources/assets/js/inline/bundle.js') }}"></script> --}}
+<script src="{{ asset('vendor/linked/js/inline/bundle.js') }}"></script>
 @endonce
 @endpush
