@@ -3,8 +3,10 @@
 namespace devsrv\inplace\Traits;
 use Illuminate\Database\Eloquent\Model;
 use devsrv\inplace\Exceptions\ModelException;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Crypt;
 
-trait ResolveModel
+trait ModelResolver
 {
     public function resolveModel($model)
     {
@@ -23,5 +25,24 @@ trait ResolveModel
         }
 
         return $modelClass.':'.$primaryKeyValue;
+    }
+
+    public function decryptModel($encrypted) : Model
+    {
+        try {
+            $model = Crypt::decryptString($encrypted);
+        } catch (DecryptException $e) {
+            throw $e;
+        }
+
+        try {
+            [$modelClass, $primaryKeyValue] = explode(':', $model);
+        } catch (\Exception $th) {
+            throw ModelException::badFormat('namespace\Model:key');
+        }
+        
+        if(! class_exists($modelClass)) throw ModelException::notFound($modelClass);
+
+        return $modelClass::findOrFail($primaryKeyValue);
     }
 }
