@@ -6,6 +6,7 @@
 
 {!! $renderValue !!}
 
+@if(isset($before)) {!! $before->toHtml() !!} @endif
 <ul>
     @foreach ($options as $option)
         <li>
@@ -18,6 +19,7 @@
         </li>
     @endforeach
 </ul>
+@if(isset($after)) {!! $after->toHtml() !!} @endif
 
 @push('inplace.component.script')
 @once
