@@ -31,7 +31,11 @@ class InplaceServiceProvider extends ServiceProvider
 
         $this->publishes([
             __DIR__.'/../public/dist' => public_path('vendor/inplace'),
-        ], 'inplace');
+        ], 'public');
+        
+        $this->publishes([
+            __DIR__.'/Providers' => app_path('Providers'),
+        ]);
     }
 
     /**
