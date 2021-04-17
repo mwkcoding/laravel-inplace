@@ -10,6 +10,7 @@
     ...inlineEditable(), 
     editedContent: `{{ $value }}`, 
     content: `{{ $value }}`,
+    id: '{{ $id }}',
     authorize: '{{ $authorize === null ? null : ((bool) $authorize === true ? 1 : 0) }}',
     model: '{{ $model }}',
     column: '{{ $column }}',
