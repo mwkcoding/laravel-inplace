@@ -27,3 +27,16 @@
 - support for middlewares via published config
 - lottie animation for success & failed saving states
 - error messages notification & validation errors list when 422
+
+## 1.2.0 - 2021-04-18
+
+inline edit
+- vendor publish tag support [`public`, `config`] `php artisan vendor:publish --provider="devsrv\inplace\InplaceServiceProvider" --tag=public`
+- inline edit component name changed from `x-inplace-component` to `x-inplace-inline`
+- changed `authorize` attribute behaviour [true - user authorized, false - user not authorized]
+- model attribute input format changed [ namespace\Model\Class:primaryKeyValue - ex. `App\Models\User:1` ]
+- model attribute support model instance too
+- added column attribute [the column name to update]
+- advanced field configuration support via fluent setter methods
+    - publish using: `php artisan inplace:config`
+    - register `App\Providers\InplaceConfigServiceProvider::class` in `app.php`
