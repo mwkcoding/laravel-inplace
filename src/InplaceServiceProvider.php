@@ -8,11 +8,18 @@ use devsrv\inplace\Components\{
     InlineBasicCommon,
     Inline,
 };
+use devsrv\inplace\Commands\GenerateConfig;
 
 class InplaceServiceProvider extends ServiceProvider
 {
     public function boot()
     {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                GenerateConfig::class,
+            ]);
+        }
+
         $this->loadViewsFrom(__DIR__.'/../resources/views', 'inplace');
 
         $this->loadViewComponentsAs('inplace', [
@@ -23,17 +30,13 @@ class InplaceServiceProvider extends ServiceProvider
 
         $this->publishes([
             __DIR__.'/../config/inplace.php' => config_path('inplace.php'),
-        ]);
+        ], 'config');
 
         $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
 
         $this->publishes([
             __DIR__.'/../public/dist' => public_path('vendor/inplace'),
         ], 'public');
-        
-        $this->publishes([
-            __DIR__.'/Providers' => app_path('Providers'),
-        ]);
     }
 
     /**
