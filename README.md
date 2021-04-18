@@ -33,30 +33,30 @@ include `@include('inplace::styles')` and `@include('inplace::scripts')` on ever
 
 ### Publishing Frontend Assets (_required_)
 ```shell
-php artisan vendor:publish --tag=inplace
+php artisan vendor:publish --provider="devsrv\inplace\InplaceServiceProvider" --tag=public
 ```
 
 ##### 💡 NOTE :
 > when updating the package make sure to use the `--force` flag to keep the assets up-to-date i.e. 
 > 
-> `php artisan vendor:publish --tag=inplace --force`
+> `php artisan vendor:publish --provider="devsrv\inplace\InplaceServiceProvider" --tag=public --force`
 
 ### Publish config (_optional_)
 
 ```shell
-php artisan vendor:publish --provider="devsrv\inplace\InplaceServiceProvider"
+php artisan vendor:publish --provider="devsrv\inplace\InplaceServiceProvider" --tag=config
 ```
 #### ✔️ authorize : 
 setting this `true` will enforce laravel's policy authorization for all the inplace edit components, though you can override the global behaviour by passing an `authorize` (bool) attribute to your inplace component
 
 ```php
-<x-inplace-component
-   model="App\Models\User:email,1"
+<x-inplace-inline
+   model="App\Models\User,1"
+   column="email"
    :authorize="false"	// override global authorization config
-   inline
 >
   Content to edit
-</x-inplace-component>
+</x-inplace-inline>
 ```
 
 #### ✔️ middleware : 
@@ -71,83 +71,48 @@ add as many middlewares you with in the `middleware` array e.g.: `['auth', 'admi
 **Example 1** | simplest usage
 
 ```php
-<x-inplace-component
-  model="App\Models\User:name,1"	// (OPTIONAL) format: App\ModelNamespace\Model:column,id
-  validation="required|min:10"		// (OPTIONAL) pass validation rules
-  inline
+<x-inplace-inline
+  model="App\Models\User:name,1"		// (REQUIRED) format: App\ModelNamespace\Model:id
+  :model="\App\Models\User::find(1)" 	// Alternatively you can pass model instance
+  column="name"							// (OPTIONAL) name of the table column to update
+  validation="required|min:10"			// (OPTIONAL) pass validation rules
 >
   {{ \App\Models\User::find(1)->name }}
-</x-inplace-component>
+</x-inplace-inline>
 ```
 
 **Example 2** | Slotted Markup
+[check here](https://github.com/devsrv/laravel-inplace-example/blob/948eaa14521284ba719e7242a247996ff221f434/resources/views/welcome.blade.php#L54)
 
 ```php
-<x-inplace-component
-	model="App\Models\User:email,1"
-	validation="required|email"
-	:authorize="false"
-    :inline="true"
+<x-inplace-inline
+	model="App\Models\User:1"
+    ...
 >
    <x-slot name="before"><div class="myclass anotherclass"><h2></x-slot>	// custom markup prepend
    <x-slot name="after"></h2></div></x-slot>								// custom markup append
 
     {{ \App\Models\User::find(1)->email }}
-</x-inplace-component>
+</x-inplace-inline>
 ```
 
 **Example - 3** | Pass Custom Class to save content
-
-```php
-<x-inplace-component
-  value="content to update"					// you may choose to pass the content using the value attribute
-  saveusing="App\Http\Inplace\CustomSave"	// pass your custom class which takes care of saving the content
-  inline
-/>
-```
+[check here](https://github.com/devsrv/laravel-inplace-example/blob/948eaa14521284ba719e7242a247996ff221f434/resources/views/welcome.blade.php#L69)
 
 > the custom save class must consist a `public save` method which receives `$model, $column, $value` and it should return an array with key `success` (bool) and `message` (string)
 
-👉 you might have noticed we didn't use the `model` attribute as because we choosed to take care of saving the data by using our own class, though if you want you can still use the model attribute to pass data which you'll get as parameter inside the `save` method of your custom class - [example](https://github.com/devsrv/laravel-inplace-example/blob/9f6961485e8c6488e6ffa56c9ebb4e45686937ce/app/Http/Inplace/CustomSave.php#L12)
 
-_Example Custom Save class :_
-
-```php
-namespace App\Http\Inplace;
-
-class CustomSave
-{
-    public function save($model, $column, $value)
-    {
-        // save data here
-        $model->{$column} = $value;
-        if($model->save()) {
-            return [
-                'success' => 1,
-                'message' => 'saved successfully'
-            ];
-        }
-
-        return [
-            'success' => 0,
-            'message' => 'failed to save'
-        ];
-    }
-}
-```
-
-refer to this [CustomSave](https://github.com/devsrv/laravel-inplace-example/blob/master/app/Http/Inplace/CustomSave.php) full example
+_Example Custom Save class :_ refer to this [CustomSave](https://github.com/devsrv/laravel-inplace-example/blob/master/app/Http/Inplace/CustomSave.php) full example
 
 **Example - 4** | Render content as custom component
 
 ```php
-<x-inplace-component
-  model="App\Models\Post:title,1"
+<x-inplace-inline
+  model="..."
   render-as="CustomInlineRender"		// pass your own blade component which takes care of how content gets rendered
-  inline
 >
-  {{ \App\Models\Post::find(1)->title }}
-</x-inplace-component>
+  ...
+</x-inplace-inline>
 ```
 
 > make sure to pass `{{ $attributes }}` to the html elenent that is wrapping the target content
@@ -162,15 +127,38 @@ refer to this example [component class](https://github.com/devsrv/laravel-inplac
 $rules = serialize(['required', \Illuminate\Validation\Rule::in(['11', '12']), 'min:2']);  // make sure to serialize
 @endphp
 
-<x-inplace-component
- inline
-model="App\Models\User:name,1"
+<x-inplace-inline
+model="App\Models\User:1"
+column="name"
 :validation="$rules"                   // complex validation can be passed by `serialize`
 >
   {{ \App\Models\User::find(1)->name }}
-</x-inplace-component>
+</x-inplace-inline>
 ```
 refer [this example](https://github.com/devsrv/laravel-inplace-example/blob/3057161a1af84a2f9a9c215157f0e28c9edcb1c4/resources/views/welcome.blade.php#L33)
+
+### 👾ADVANCED
+instead passing config via attributes you can use the advanced field configurator file where you have access to fluent config setter methods also this approach lets you reuse same config for multiple edits and more fine grained options to configure
+
+```shell
+php artisan inplace:config
+```
+this will create `InplaceConfigServiceProvider.php` in `App\Providers`. you should add this file in the `providers` array of `config\app.php`
+
+in the `config` method within `inline` group add new inline field config using `devsrv\inplace\InlineEdit` class
+
+then you can simply use the component as:
+```php
+<x-inplace-inline
+	id="USERNAME"							// the should match id of field config
+	:model="\App\Models\User::find(1)"		// however model still needs to be passed via attribute (always required)
+>
+```
+
+refer to [this file](https://github.com/devsrv/laravel-inplace-example/blob/master/app/Providers/InplaceConfigServiceProvider.php) for example
+
+**_detailed documentation comming soon_ . . .**
+
 
 ### 🎁 Bonus:
 
