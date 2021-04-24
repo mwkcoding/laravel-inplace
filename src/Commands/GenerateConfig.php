@@ -12,7 +12,8 @@ class GenerateConfig extends Command
      *
      * @var string
      */
-    protected $signature = 'inplace:config';
+    protected $signature = 'inplace:config
+                            {type=all : The type of inplace editable}';
 
     /**
      * The console command description.
@@ -31,6 +32,50 @@ class GenerateConfig extends Command
         parent::__construct();
     }
 
+    private function validateType() {
+        $supports = ['all', 'relation', 'inline'];
+
+        $type = $this->argument('type');
+
+        if(! in_array($type, $supports)) {
+            $this->error('😱 supported types: '. implode(', ', $supports));
+            return false;
+        }
+
+        return $type;
+    }
+
+    private function createConfigFile($type) {
+        $path = [
+            'inline' => [
+                'target_file' => app_path('Http/Inplace/Inline.php'),
+                'target_file_path' => 'App/Http/Inplace/Inline.php',
+                'stub' => File::get(__DIR__ . '/../../resources/stubs/Inline.stub')
+            ],
+            'relation' => [
+                'target_file' => app_path('Http/Inplace/Relation.php'),
+                'target_file_path' => 'App/Http/Inplace/Relation.php',
+                'stub' => File::get(__DIR__ . '/../../resources/stubs/Relation.stub')
+            ]
+        ];
+
+        if(File::exists(data_get($path, $type.'.target_file'))) {
+            $this->error('🙄 '. $type .' configurator already exists at '. data_get($path, $type.'.target_file_path'));
+            $this->info('to publish again safely backup the current file & rename it or put somewhere else');
+            $this->info('then try again');
+            $this->newLine();
+
+            return;
+        }
+
+        File::put(data_get($path, $type.'.target_file'), data_get($path, $type.'.stub'));
+        $this->info('🥳 '. $type .' config published successfully!');
+        $this->info('👉 '. data_get($path, $type.'.target_file_path'));
+        $this->newLine();
+
+        return;
+    }
+
     /**
      * Execute the console command.
      *
@@ -38,25 +83,22 @@ class GenerateConfig extends Command
      */
     public function handle()
     {
-        $file = app_path('Providers/InplaceConfigServiceProvider.php');
+        if(! $type = $this->validateType()) return;
 
-        if(File::exists($file)) {
-            $this->info('🙄 File already exists at App\Providers');
-            $this->newLine();
-            $this->info('to publish again safely backup the current file & rename it or put somewhere else');
-            $this->info('then try again');
+        $inplace_path = app_path('Http/Inplace');
 
-            return 1;
+        if (! is_dir($inplace_path)) File::makeDirectory($inplace_path, 0755, true);
+
+
+        if($type === 'all') {
+            $this->createConfigFile('inline');
+            $this->createConfigFile('relation');
+
+            return;
         }
 
-        $stub_contents = File::get(__DIR__ . '/../../resources/stubs/InplaceConfigServiceProvider.stub');
-        File::put($file, $stub_contents);
+        $this->createConfigFile($type);
 
-        $this->info('🥳 Config published successfully!');
-        $this->newLine();
-        $this->info('👉 don\'t forget to add App\Providers\InplaceConfigServiceProvider::class');
-        $this->info('👉 in the providers list of app.php');
-
-        return 1;
+        return;
     }
 }

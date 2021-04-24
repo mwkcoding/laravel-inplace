@@ -9,11 +9,20 @@ use devsrv\inplace\Components\{
     Inline,
 };
 use devsrv\inplace\Commands\GenerateConfig;
+use devsrv\inplace\InplaceConfig;
 
 class InplaceServiceProvider extends ServiceProvider
 {
     public function boot()
     {
+        $this->app->singleton(InplaceConfig::class, function ($app) {
+            $config = [
+                'inline' => class_exists('\App\Http\Inplace\Inline') ? \App\Http\Inplace\Inline::config() : null,
+                'relation' => class_exists('\App\Http\Inplace\Relation') ? \App\Http\Inplace\Relation::config() : null
+            ];
+            return new InplaceConfig($config);
+        });
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 GenerateConfig::class,
