@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0 - 2021-04-24
+
+- instead of serviceprovider for advanced configuration now using seperate configurator files [ App\Http\Inplace\Inline.php App\Http\Inplace\Relation.php ]
+- publish advanced config using: `php artisan inplace:config`
+- `inplace:config` command support arguments - `all` `inline` `relation`
+
 ## 1.2.0 - 2021-04-18
 
 inline edit

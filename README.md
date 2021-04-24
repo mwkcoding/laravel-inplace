@@ -138,14 +138,17 @@ column="name"
 refer [this example](https://github.com/devsrv/laravel-inplace-example/blob/3057161a1af84a2f9a9c215157f0e28c9edcb1c4/resources/views/welcome.blade.php#L33)
 
 ### 👾ADVANCED
-instead passing config via attributes you can use the advanced field configurator file where you have access to fluent config setter methods also this approach lets you reuse same config for multiple edits and more fine grained options to configure
+instead passing config via attributes you can use the advanced field configurator file where you have access to fluent config setter methods, also this approach lets you reuse same config for multiple edits and more fine grained options to configure
 
 ```shell
-php artisan inplace:config
+php artisan inplace:config {all | inline | relation}
 ```
-this will create `InplaceConfigServiceProvider.php` in `App\Providers`. you should add this file in the `providers` array of `config\app.php`
+this command will create `App\Http\Inplace\Inline.php` and `App\Http\Inplace\Inline.php` or just one of them depending on your input
 
-in the `config` method within `inline` group add new inline field config using `devsrv\inplace\InlineEdit` class
+in the `config` method of the class add multiple configs as array 
+> for inline field: using `devsrv\inplace\InlineEdit` class and 
+> 
+> for relation field: using `devsrv\inplace\RelationManager` class
 
 then you can simply use the component as:
 ```php
@@ -155,7 +158,7 @@ then you can simply use the component as:
 >
 ```
 
-refer to [this file](https://github.com/devsrv/laravel-inplace-example/blob/master/app/Providers/InplaceConfigServiceProvider.php) for example
+refer to [this file](https://github.com/devsrv/laravel-inplace-example/blob/master/app/Http/Inplace/Inline.php) for example
 
 **_detailed documentation comming soon_ . . .**
 
