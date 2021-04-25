@@ -21,6 +21,7 @@ class Inline extends Component
 
     public $csrf_token;
     public $save_route;
+    public $icons;
 
     public function __construct($model, $id = null, $column = null, $value = null, $renderAs = null, $authorize = null, $saveusing = null, $validation = 'required') {
         if($id) {
@@ -37,6 +38,8 @@ class Inline extends Component
 
         $this->csrf_token = csrf_token();
         $this->save_route = route('inplace.save');
+
+        $this->icons = config('inplace.icons');
     }
 
     private function resolveConfigUsingID(string $id, $model) {
