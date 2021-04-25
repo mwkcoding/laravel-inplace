@@ -17,8 +17,8 @@
     saveusing: '{{ $saveusing }}',
     rules: {!! str_replace('"', '\'', e(json_encode($validation))) !!}
 }" x-init="onBoot($watch)">
-    <div class="editable">
-        <div class="content">
+    <div class="inplace-editable">
+        <div class="inplace-content" @dblclick="initEdit">
             <x-dynamic-component
                 :component="$renderAs"
                 @input="trackEdit($event)"
@@ -35,12 +35,24 @@
         </div>
 
         <div class="edit-control" x-show="!saving && !animatingNotify">
-            <button @click="initEdit" x-show="!editing" type="button">edit</button>
+            <button @click="initEdit" class="scale-on-hover" x-show="!editing" type="button">
+                @if($icons && isset($icons['edit'])) {!! $icons['edit'] !!} @else
+                <svg class="inplace-control-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                @endif 
+            </button>
 
             <template x-if="editing">
                 <div>
-                    <button x-show="editedContent && content !== editedContent" @click="handleSave" type="button">save</button>
-                    <button @click="handleCancel" type="button">close</button>
+                    <button x-show="editedContent && content !== editedContent" @click="handleSave" type="button">
+                        @if($icons && isset($icons['save'])) {!! $icons['save'] !!} @else
+                        <svg class="inplace-control-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        @endif 
+                    </button>
+                    <button @click="handleCancel" type="button">
+                        @if($icons && isset($icons['cancel'])) {!! $icons['cancel'] !!} @else
+                        <svg class="inplace-control-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        @endif 
+                    </button>
                 </div>
             </template>
         </div>
@@ -60,7 +72,7 @@
                 <span x-text="errorMessage"></span> <button type="button" @click="if($refs.this) $refs.this.remove()">X</button>
             </p>
 
-            <ul x-show="errorMessage.length" class="error-messages">
+            <ul x-show="errorMessage.length" class="inplace-error-messages">
                 <template x-for="msg in validationErrors" :key="msg">
                     <li x-text="msg"></li>
                 </template>
