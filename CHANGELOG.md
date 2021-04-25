@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.1 - 2021-04-25
+
+- edit control button appear on content hover
+- config support for buttons custom svg icons
+- inline editable text doubleclick support
+
 ## 1.3.0 - 2021-04-24
 
 - instead of serviceprovider for advanced configuration now using seperate configurator files [ App\Http\Inplace\Inline.php App\Http\Inplace\Relation.php ]
