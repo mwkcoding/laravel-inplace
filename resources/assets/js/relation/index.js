@@ -1,11 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom'
 import BasicCheckbox from './fields/checkbox';
 
 export default function RelationEditor(props) {
     const skipPropsPass = ['model', 'relationName'];
 
+    const [error, setError] = useState({has: false, type: '', message: ''});
+    const [success, setSuccess] = useState(false);
+    const [validationErrors, setValidationErrors] = useState([]);
+    const [saving, setSaving] = useState(false);
+
+    const resetFormStates = () => {
+        setSaving(true);
+        setValidationErrors([]);
+        setError({has: false, message: ''});
+        setSuccess(false);
+    }
+
     const handleSave = (values) => {
+        resetFormStates();
+
         window.dispatchEvent(new CustomEvent("inplace-editable-progress", {
             detail: { start: true }
         }));
@@ -21,41 +35,46 @@ export default function RelationEditor(props) {
             credentials: "same-origin",
             body: JSON.stringify({
                 values: values,
-                model: props.model
+                id: props.id,
+                model: props.model,
+                relationName: props.relationName,
             })
         })
         .then(res => {
-            /*if(res.status === 422) this.errorMessage = 'Validation Error !';
-            else if(res.status === 403) this.errorMessage = 'Permission restricted !';
-            else if(res.status >= 500) this.errorMessage = 'Error saving content !';*/
+            if(res.status === 422) setError({has: true, type: 'Validation Error !', message: ''});
+            else if(res.status === 403) setError({has: true, type: 'Permission restricted !', message: ''});
+            else if(res.status >= 500) setError({has: true, type: 'Error saving content !', message: ''});
 
             return res.json();
         })
         .then(result => {
-            /*this.saving = false;
-
             if(Object.prototype.hasOwnProperty.call(result, 'success') && Number(result.success) === 1) {
-                this.success = true;
+                setSuccess(true);
                 
                 return;
             }
 
-            this.error = true;
-
-            this.errorMessage += Object.prototype.hasOwnProperty.call(result, 'message') && ' '+ result.message;
+            setError((prevErr) => {
+                return {
+                    has: true,
+                    type: prevErr.type || 'Error saving content !',
+                    message: Object.prototype.hasOwnProperty.call(result, 'message') && ' '+ result.message 
+                }
+            });
 
             // if validation error show em all
-            if(Object.prototype.hasOwnProperty.call(result, 'errors'))
-            this.validationErrors = Object.entries(result.errors)[0][1];*/
+            if(Object.prototype.hasOwnProperty.call(result, 'errors')) {
+                setValidationErrors(Object.entries(result.errors).map(err => err[1]));
+            }
 
             return;
         })
         .catch(err => {
-            /*this.saving = false;
-            this.error = true;
-            this.errorMessage = 'Error saving content !';*/
+            setError({has: true, message: 'Error saving content !'});
         })
         .finally(() => {
+            setSaving(false);
+
             window.dispatchEvent(new CustomEvent("inplace-editable-progress", {
                 detail: { stop: true }
             }));
@@ -72,6 +91,20 @@ export default function RelationEditor(props) {
     return (
         <div>
             <BasicCheckbox {...fieldOptions} onSave={handleSave}  />
+
+            <div className="message">
+                {! saving ?
+                    error.has && (<><h2 className="text-danger">{error.type}</h2><span className="text-danger">{error.message}</span></>) : null
+                }
+
+                { (! saving && validationErrors.length > 0) &&
+                    validationErrors.map((e, i) => <p key={i} className="text-danger">{e}</p>)
+                }
+
+                {! saving ?
+                    success && (<span className="text-success">Success</span>) : null
+                }
+            </div>
         </div>
     );
 }
