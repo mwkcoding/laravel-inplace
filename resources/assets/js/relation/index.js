@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom'
 import BasicCheckbox from './fields/checkbox';
 
@@ -9,6 +9,22 @@ export default function RelationEditor(props) {
     const [success, setSuccess] = useState(false);
     const [validationErrors, setValidationErrors] = useState([]);
     const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        if(success) dispatchSuccessEvent();
+    }, [success]);
+
+    const dispatchSuccessEvent = () => {
+        window.dispatchEvent(new CustomEvent("inplace-editable-finish", {
+            detail: { success: true }
+        }));
+    }
+
+    const dispatchErrorEvent = () => {
+        window.dispatchEvent(new CustomEvent("inplace-editable-finish", {
+            detail: { success: false }
+        }));
+    }
 
     const resetFormStates = () => {
         setSaving(true);
@@ -62,6 +78,8 @@ export default function RelationEditor(props) {
                 }
             });
 
+            dispatchErrorEvent();
+
             // if validation error show em all
             if(Object.prototype.hasOwnProperty.call(result, 'errors')) {
                 setValidationErrors(Object.entries(result.errors).map(err => err[1]));
@@ -71,6 +89,8 @@ export default function RelationEditor(props) {
         })
         .catch(err => {
             setError({has: true, message: 'Error saving content !'});
+
+            dispatchErrorEvent();
         })
         .finally(() => {
             setSaving(false);
