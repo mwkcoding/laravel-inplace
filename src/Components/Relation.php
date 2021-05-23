@@ -20,6 +20,7 @@ class Relation extends ViewComponent
     public $thumbnailed;
     public $thumbnailWidth;
     public $resolveThumbnail = null;
+    public $multiple;
     public $renderValue;
     public $renderTemplate;
 
@@ -36,21 +37,24 @@ class Relation extends ViewComponent
     public $currentValues = [];
     public $csrf_token;
     public $save_route;
+    public $field_id;
 
     /**
      * Create a new component instance.
      *
      * @return void
      */
-    public function __construct($model, $relationName = null, $relationColumn = null, $id = null, $validation = null, $filterOptions = null, $thumbnailed = false, $thumbnailWidth = 30, $renderTemplate = null)
+    public function __construct($model, $relationName = null, $relationColumn = null, $id = null, $validation = null, $filterOptions = null, $thumbnailed = false, $thumbnailWidth = 30, $multiple = true, $renderTemplate = null)
     {
         if($id) {
+            $this->id = Crypt::encryptString($id);
             $this->resolveConfigUsingID($id, $model);
         }
         else {
-            $this->resolveConfigUsingAttributes($model, $relationName, $relationColumn, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $renderTemplate);
+            $this->resolveConfigUsingAttributes($model, $relationName, $relationColumn, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $multiple, $renderTemplate);
         }
 
+        $this->field_id = 'relation:'.bin2hex(random_bytes(16));
         $this->csrf_token = csrf_token();
         $this->save_route = route('inplace.relation.save');
         $this->model = Crypt::encryptString($this->modelFormatted);
@@ -73,6 +77,7 @@ class Relation extends ViewComponent
         $this->thumbnailed = $relationManager->thumbnail;
         $this->thumbnailWidth = $relationManager->thumbnailWidth;
         $this->resolveThumbnail = $relationManager->resolveThumbnailUsing;
+        $this->multiple = $relationManager->multiple;
 
         if($relationManager->renderPartial) {
             $this->renderValue = $this->renderUsingPartial($relation, $relationManager->renderPartial, $relationManager->renderQuery);
@@ -85,7 +90,7 @@ class Relation extends ViewComponent
         }
     }
 
-    private function resolveConfigUsingAttributes($model, $relationName, $relationColumn, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $renderTemplate) {
+    private function resolveConfigUsingAttributes($model, $relationName, $relationColumn, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $multiple, $renderTemplate) {
         throw_if(is_null($relationName), RelationException::missing('relation name required'));
         throw_if(is_null($relationColumn), RelationException::missing('relation column required'));
 
@@ -100,6 +105,7 @@ class Relation extends ViewComponent
         $this->validation = $validation;
         $this->thumbnailed = $thumbnailed;
         $this->thumbnailWidth = $thumbnailWidth;
+        $this->multiple = $multiple;
         $this->filterOptionsQuery = $filterOptions;
 
         $this->renderValue = $renderTemplate? $this->renderUsingPartial($relation, $renderTemplate) : $this->renderDefault($relation, $relationColumn);
@@ -147,7 +153,19 @@ class Relation extends ViewComponent
             $relatedModel = $withQuery($relatedModel);
         }
 
-        return $relatedModel->get();
+        $relatedList = $relatedModel->get();
+
+        $allOptions = [];
+
+        foreach ($relatedList as $item) {
+            $allOptions[] = [
+                'thumbnail' => $this->thumbnailed ? $this->resolveThumbnail($item) : '',
+                'value' => $item->getAttributeValue($this->relationPrimaryKey),
+                'label' => $item->getAttributeValue($this->relationColumn)
+            ];
+        }
+
+        return $allOptions;
     }
 
     public function resolveThumbnail($model)
