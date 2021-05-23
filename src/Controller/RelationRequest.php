@@ -16,21 +16,18 @@ class RelationRequest extends Controller {
 
     public $id = null;
     public $model = null;
-    public $column = null;
-    public $inlineEditor = null;
+    public $relationName = null;
 
     public $rules = 'required';
-    public $allowed = null;
     public $saveusing = null;
 
-    public $content;
+    public $values = [];
 
     public function __construct() {
         
     }
 
     public function save(HTTPRequest $request) {
-        ray()->showRequests();
 
         // db perform fail
         return [
