@@ -12,7 +12,6 @@ class Relation extends ViewComponent
     use ModelResolver, ConfigResolver;
 
     public $id;
-    public $authorize;
     public $model;
     public $relationName;
     public $relationColumn;
@@ -41,13 +40,13 @@ class Relation extends ViewComponent
      *
      * @return void
      */
-    public function __construct($model, $relationName = null, $relationColumn = null, $id = null, $authorize = null, $validation = null, $filterOptions = null, $thumbnailed = false, $thumbnailWidth = 30, $renderTemplate = null)
+    public function __construct($model, $relationName = null, $relationColumn = null, $id = null, $validation = null, $filterOptions = null, $thumbnailed = false, $thumbnailWidth = 30, $renderTemplate = null)
     {
         if($id) {
             $this->resolveConfigUsingID($id, $model);
         }
         else {
-            $this->resolveConfigUsingAttributes($model, $relationName, $relationColumn, $authorize, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $renderTemplate);
+            $this->resolveConfigUsingAttributes($model, $relationName, $relationColumn, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $renderTemplate);
         }
 
         $this->model = Crypt::encryptString($this->modelFormatted);
@@ -82,7 +81,7 @@ class Relation extends ViewComponent
         }
     }
 
-    private function resolveConfigUsingAttributes($model, $relationName, $relationColumn, $authorize, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $renderTemplate) {
+    private function resolveConfigUsingAttributes($model, $relationName, $relationColumn, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $renderTemplate) {
         throw_if(is_null($relationName), RelationException::missing('relation name required'));
         throw_if(is_null($relationColumn), RelationException::missing('relation column required'));
 
@@ -95,7 +94,6 @@ class Relation extends ViewComponent
         $this->relationColumn = $relationColumn;
         $this->relationPrimaryKey = $relatedModel->getKeyName();
         $this->validation = $validation;
-        $this->authorize = $authorize;
         $this->thumbnailed = $thumbnailed;
         $this->thumbnailWidth = $thumbnailWidth;
         $this->filterOptionsQuery = $filterOptions;
