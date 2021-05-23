@@ -22,7 +22,9 @@ class Relation
                 };
             })
             ->filterOptions(fn($query) => $query->where('label', '!=', 'olive'))
-            ->renderTemplate('partials.badge-list', fn($q) => $q->where('label', '!=', 'olive')),*/
+            ->renderTemplate('partials.badge-list', fn($q) => $q->where('label', '!=', 'olive')),
+            ->authorizeUsing(fn() => auth()->user()->can('update', \App\Post::find(1))),
+            ->bypassAuthorize(),*/
 
 
             /*RelationManager::make('AUTHOR_BADGES2')
