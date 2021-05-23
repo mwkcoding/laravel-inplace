@@ -13,6 +13,7 @@ class RelationManager {
     public $renderUsing = null;
     public $thumbnail = false;
     public $thumbnailWidth = 30;
+    public $multiple = true;
     public $resolveThumbnailUsing = null;
     public $filterOptionsQuery;
 
@@ -54,6 +55,11 @@ class RelationManager {
 
     public function bypassAuthorize() {
         $this->bypassAuthorize = true;
+        return $this;
+    }
+
+    public function multiple($multiple = true) {
+        $this->multiple = $multiple;
         return $this;
     }
 
