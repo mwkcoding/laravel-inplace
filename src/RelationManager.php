@@ -6,6 +6,8 @@ class RelationManager {
     public $id;
     public $relationName;
     public $column;
+    public $bypassAuthorize = false;
+    public $authorizeUsing = null;
     public $renderPartial;
     public $renderQuery;
     public $renderUsing = null;
@@ -42,6 +44,16 @@ class RelationManager {
 
     public function renderUsing($renderUsing) {
         $this->renderUsing = $renderUsing;
+        return $this;
+    }
+
+    public function authorizeUsing($callback) {
+        $this->authorizeUsing = $callback;
+        return $this;
+    }
+
+    public function bypassAuthorize() {
+        $this->bypassAuthorize = true;
         return $this;
     }
 
