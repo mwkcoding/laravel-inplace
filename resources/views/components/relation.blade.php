@@ -4,25 +4,40 @@
 @endonce
 @endpush
 
-{!! $renderValue !!}
+<div>
 
-@if(isset($before)) {!! $before->toHtml() !!} @endif
-<ul>
-    @foreach ($options as $option)
-        <li>
-            @if($thumbnailed)
-                <img src="{{ $resolveThumbnail($option) }}" width="{{ $thumbnailWidth }}" alt="avatar" />
-            @endif
+    {!! $renderValue !!}
 
-            <input type="checkbox" name="" value="{{ $option->getAttributeValue($relationPrimaryKey) }}" id="" {{ isset($currentValues) && in_array($option->getAttributeValue($relationPrimaryKey), $currentValues) ? 'checked' : '' }} />
-            {{ $option->getAttributeValue($relationColumn) }}
-        </li>
-    @endforeach
-</ul>
-@if(isset($after)) {!! $after->toHtml() !!} @endif
+    @if(isset($before)) {!! $before->toHtml() !!} @endif
+
+    <div id="{{ $field_id }}"></div>
+        
+    @if(isset($after)) {!! $after->toHtml() !!} @endif
+
+</div>
 
 @push('inplace.component.script')
 @once
-
+<script>
+    window._inplace = Object.assign(window._inplace || {}, {
+        relation: { route: '{{ $save_route }}' },
+        csrf_token: '{{ $csrf_token }}'
+    });
+</script>
+<script src="{{ asset('vendor/inplace/resources/assets/js/relation/bundle.js') }}"></script>
 @endonce
+
+<script>
+    (function() {
+        drawRelationEditable('{{ $field_id }}', {
+            model: '{{ $model }}',
+            relationName: '{{ $relationName }}',
+            options: @json($options),
+            thumbnailed: '{{ (bool) $thumbnailed }}',
+            thumbnailWidth: '{{ $thumbnailWidth }}',
+            currentValues: @json($currentValues),
+            multiple: '{{ (bool) $multiple }}'
+        });
+    })();
+</script>
 @endpush
