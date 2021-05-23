@@ -34,6 +34,8 @@ class Relation extends ViewComponent
 
     public $options = [];
     public $currentValues = [];
+    public $csrf_token;
+    public $save_route;
 
     /**
      * Create a new component instance.
@@ -49,6 +51,8 @@ class Relation extends ViewComponent
             $this->resolveConfigUsingAttributes($model, $relationName, $relationColumn, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $renderTemplate);
         }
 
+        $this->csrf_token = csrf_token();
+        $this->save_route = route('inplace.relation.save');
         $this->model = Crypt::encryptString($this->modelFormatted);
         $this->options = $this->deriveOptions($this->relatedModel, $this->relationColumn, $this->filterOptionsQuery);
         $this->currentValues = $this->relation->get()->pluck($this->relationPrimaryKey)->all();
