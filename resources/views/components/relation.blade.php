@@ -30,6 +30,7 @@
 <script>
     (function() {
         drawRelationEditable('{{ $field_id }}', {
+            id: '{{ $id }}',
             model: '{{ $model }}',
             relationName: '{{ $relationName }}',
             options: @json($options),
