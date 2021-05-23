@@ -89,7 +89,7 @@ window.inlineEditable = function () {
             this.validationErrors = [];
             this.saving = true;
 
-            fetch(window._inplace.route, {
+            fetch(window._inplace.inline.route, {
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
