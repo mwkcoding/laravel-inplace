@@ -54,7 +54,9 @@ class Relation extends ViewComponent
         }
         else {
             $configPayload = $field->resolveFromComponentAttribute()->getValues();
+
             $this->relationName = Crypt::encryptString($configPayload['relation_name']);
+            $this->validation = Crypt::encryptString(serialize($configPayload['validation']));
         }
 
         $this->field_id = 'relation:'.bin2hex(random_bytes(16));
