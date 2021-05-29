@@ -4,13 +4,10 @@ namespace devsrv\inplace\Components;
 
 use Illuminate\View\Component as ViewComponent;
 use Illuminate\Support\Facades\Crypt;
-use devsrv\inplace\Exceptions\RelationException;
-use devsrv\inplace\Traits\{ ModelResolver, ConfigResolver };
+use devsrv\inplace\Fields\Relation\Relation as RelationField;
 
 class Relation extends ViewComponent
 {
-    use ModelResolver, ConfigResolver;
-
     public $id;
     public $model;
     public $relationName;
@@ -23,15 +20,7 @@ class Relation extends ViewComponent
     public $multiple;
     public $renderValue;
     public $renderTemplate;
-
-    private $modelFormatted;
-    private $relation;
-    private $relatedModel;
-    private $filterOptionsQuery;
-
-    const SUPPORTED_RELATIONS = [
-        'BelongsToMany'
-    ];
+    public $filterOptionsQuery;
 
     public $options = [];
     public $currentValues = [];
@@ -44,139 +33,40 @@ class Relation extends ViewComponent
      *
      * @return void
      */
-    public function __construct($model, $relationName = null, $relationColumn = null, $id = null, $validation = null, $filterOptions = null, $thumbnailed = false, $thumbnailWidth = 30, $multiple = true, $renderTemplate = null)
+    public function __construct($model, $relationName = null, $relationColumn = null, $id = null, $validation = null, $filterOptionsQuery = null, $thumbnailed = false, $thumbnailWidth = 30, $multiple = true, $renderTemplate = null)
     {
+        $field = new RelationField(
+            $model,
+            $id,
+            $relationName, 
+            $relationColumn,
+            $validation,
+            $thumbnailed,
+            $thumbnailWidth,
+            $multiple,
+            $renderTemplate,
+            $filterOptionsQuery
+        );
+
         if($id) {
             $this->id = Crypt::encryptString($id);
-            $this->resolveConfigUsingID($id, $model);
+            $configPayload = $field->resolveFromFieldMaker()->getValues();
         }
         else {
-            $this->resolveConfigUsingAttributes($model, $relationName, $relationColumn, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $multiple, $renderTemplate);
+            $configPayload = $field->resolveFromComponentAttribute()->getValues();
+            $this->relationName = Crypt::encryptString($configPayload['relation_name']);
         }
 
         $this->field_id = 'relation:'.bin2hex(random_bytes(16));
         $this->csrf_token = csrf_token();
         $this->save_route = route('inplace.relation.save');
-        $this->model = Crypt::encryptString($this->modelFormatted);
-        $this->options = $this->deriveOptions($this->relatedModel, $this->relationColumn, $this->filterOptionsQuery);
-        $this->currentValues = $this->relation->get()->pluck($this->relationPrimaryKey)->all();
-    }
-
-    private function resolveConfigUsingID(string $id, $model) {
-        $relationManager = self::getConfig('relation', $id);
-        
-        [$modelFormatted, $relation, $relatedModel] = $this->validate($model, $relationManager->relationName);
-
-        $this->modelFormatted = $modelFormatted;
-        $this->relatedModel = $relatedModel;
-        $this->relation = $relation;
-        $this->relationPrimaryKey = $relatedModel->getKeyName();
-        $this->relationColumn = $relationManager->column;
-        $this->filterOptionsQuery = $relationManager->filterOptionsQuery;
-
-        $this->thumbnailed = $relationManager->thumbnail;
-        $this->thumbnailWidth = $relationManager->thumbnailWidth;
-        $this->resolveThumbnail = $relationManager->resolveThumbnailUsing;
-        $this->multiple = $relationManager->multiple;
-
-        if($relationManager->renderPartial) {
-            $this->renderValue = $this->renderUsingPartial($relation, $relationManager->renderPartial, $relationManager->renderQuery);
-        }
-        else if($relationManager->renderUsing) {
-            $this->renderValue = $this->renderUsingClosure($relation, $relationManager->renderUsing);
-        }
-        else {
-            $this->renderValue = $this->renderDefault($relation, $relationManager->column);
-        }
-    }
-
-    private function resolveConfigUsingAttributes($model, $relationName, $relationColumn, $validation, $filterOptions, $thumbnailed, $thumbnailWidth, $multiple, $renderTemplate) {
-        throw_if(is_null($relationName), RelationException::missing('relation name required'));
-        throw_if(is_null($relationColumn), RelationException::missing('relation column required'));
-
-        [$modelFormatted, $relation, $relatedModel] = $this->validate($model, $relationName);
-
-        $this->modelFormatted = $modelFormatted;
-        $this->relation = $relation;
-        $this->relationName = Crypt::encryptString($relationName);
-        $this->relatedModel = $relatedModel;
-        $this->relationColumn = $relationColumn;
-        $this->relationPrimaryKey = $relatedModel->getKeyName();
-        $this->validation = $validation;
-        $this->thumbnailed = $thumbnailed;
-        $this->thumbnailWidth = $thumbnailWidth;
-        $this->multiple = $multiple;
-        $this->filterOptionsQuery = $filterOptions;
-
-        $this->renderValue = $renderTemplate? $this->renderUsingPartial($relation, $renderTemplate) : $this->renderDefault($relation, $relationColumn);
-    }
-
-    private function renderUsingPartial($relation, $partial, $mergeQuery = null) {
-        $query = is_callable($mergeQuery) ? $mergeQuery(clone $relation) : $relation;
-        return view($partial, ['items' => $query->get()]);
-    }
-
-    private function renderUsingClosure($relation, callable $mergeQuery) {
-        return $mergeQuery(clone $relation);
-    }
-
-    private function renderDefault($relation, $relationColumn) {
-        return $relation->pluck($relationColumn)->implode(', ');
-    }
-
-    private function validate($model, $relationName)
-    {
-        $modelString = $this->resolveModel($model);
-
-        [$modelClass, $primaryKeyValue] = explode(':', $modelString);
-
-        $parentModel = $modelClass::findOrFail($primaryKeyValue);
-
-        try {
-            $relation = $parentModel->{$relationName}();
-            $relatedModel = $relation->getRelated();
-        } catch (\BadMethodCallException $e) {
-            throw RelationException::notFound($modelClass, $relationName);
-        }
-
-        throw_unless(in_array(class_basename($relation), self::SUPPORTED_RELATIONS), RelationException::notSupported($relationName));
-
-        return [$modelString, $relation, $relatedModel];
-    }
-
-    private function deriveOptions($relatedModel, $relationColumn, $withQuery) {
-        $selectFields = [$relatedModel->getTable() .'.'. $this->relationPrimaryKey, $relatedModel->getTable() .'.'. $relationColumn];
-
-        $relatedModel = $relatedModel->select($selectFields);
-
-        if(is_callable($withQuery)) {
-            $relatedModel = $withQuery($relatedModel);
-        }
-
-        $relatedList = $relatedModel->get();
-
-        $allOptions = [];
-
-        foreach ($relatedList as $item) {
-            $allOptions[] = [
-                'thumbnail' => $this->thumbnailed ? $this->resolveThumbnail($item) : '',
-                'value' => $item->getAttributeValue($this->relationPrimaryKey),
-                'label' => $item->getAttributeValue($this->relationColumn)
-            ];
-        }
-
-        return $allOptions;
-    }
-
-    public function resolveThumbnail($model)
-    {
-        if(! $this->thumbnailed) return null;
-
-        if($this->resolveThumbnail && is_callable($this->resolveThumbnail)) {
-            return call_user_func($this->resolveThumbnail, $model);
-        }
-
-        return $model->inplaceThumb ?? null;
+        $this->model = Crypt::encryptString($configPayload['model']);
+        $this->options = $configPayload['options'];
+        $this->multiple = $configPayload['multiple'];
+        $this->thumbnailed = $configPayload['thumbnailed'];
+        $this->thumbnailWidth = $configPayload['thumbnail_width'];
+        $this->renderValue = $configPayload['render_current'];
+        $this->currentValues = $configPayload['current_values'];
     }
     
 
