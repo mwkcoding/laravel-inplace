@@ -6,12 +6,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Routing\Controller;
 use devsrv\inplace\Traits\ModelResolver;
 use devsrv\inplace\Fields\Relation\Relation;
 use devsrv\inplace\Authorize;
 
-class RelationRequest extends Controller {
+class RelationRequest {
     use ModelResolver;
 
     public $id = null;
@@ -87,17 +86,25 @@ class RelationRequest extends Controller {
         }
     }
 
-    public function save(Request $request) {
+    private function authorize() {
         if(! $this->bypassAuthorize) {
             Authorize::allowed($this->model, $this->authorizeUsing);
         }
+    }
 
+    private function validate() {
         $rules = ['values' => $this->rules];
 
         if($this->eachRules) { $rules['values.*'] = $this->eachRules; }
 
-        Validator::make(['values' => $request->input('values')], $rules)->validate();
+        Validator::make(['values' => request()->input('values')], $rules)->validate();
+    }
 
+    public function save(Request $request) {
+        $this->authorize();
+
+        $this->validate();
+        
         // db perform fail
         return [
             'success' => 1,
