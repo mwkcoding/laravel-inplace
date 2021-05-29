@@ -23,6 +23,9 @@ class Relation implements Assemble {
     public $resolveThumbnail = null;
     public $renderValue;
 
+    private $authorizeUsing = null;
+    private $bypassAuthorize = false;
+
     private $modelFormatted;
     private $relation;
     private $relatedModel;
@@ -92,6 +95,9 @@ class Relation implements Assemble {
         $this->thumbnailWidth = $relationManager->thumbnailWidth;
         $this->resolveThumbnail = $relationManager->resolveThumbnailUsing;
         $this->multiple = $relationManager->multiple;
+
+        $this->authorizeUsing = $relationManager->authorizeUsing;
+        $this->bypassAuthorize = $relationManager->bypassAuthorize;
 
         if($relationManager->renderPartial) {
             $this->renderValue = $this->renderUsingPartial($relation, $relationManager->renderPartial, $relationManager->renderQuery);
@@ -188,6 +194,8 @@ class Relation implements Assemble {
             'multiple' => $this->multiple,
             'thumbnailed' => $this->thumbnailed, 
             'thumbnail_width' => $this->thumbnailWidth, 
+            'authorize_using' => $this->authorizeUsing, 
+            'bypass_authorize' => $this->bypassAuthorize, 
         ];
     }
 }
