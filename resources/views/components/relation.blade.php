@@ -34,6 +34,7 @@
             model: '{{ $model }}',
             relationName: '{{ $relationName }}',
             rules: '{{ $validation }}',
+            eachRules: '{{ $validateEach }}',
             options: @json($options),
             thumbnailed: '{{ (bool) $thumbnailed }}',
             thumbnailWidth: '{{ $thumbnailWidth }}',

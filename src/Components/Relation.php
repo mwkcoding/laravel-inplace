@@ -14,6 +14,7 @@ class Relation extends ViewComponent
     public $relationColumn;
     public $relationPrimaryKey;
     public $validation;
+    public $validateEach;
     public $thumbnailed;
     public $thumbnailWidth;
     public $resolveThumbnail = null;
@@ -33,7 +34,7 @@ class Relation extends ViewComponent
      *
      * @return void
      */
-    public function __construct($model, $relationName = null, $relationColumn = null, $id = null, $validation = null, $filterOptionsQuery = null, $thumbnailed = false, $thumbnailWidth = 30, $multiple = true, $renderTemplate = null)
+    public function __construct($model, $relationName = null, $relationColumn = null, $id = null, $validation = null, $validateEach = null, $filterOptionsQuery = null, $thumbnailed = false, $thumbnailWidth = 30, $multiple = true, $renderTemplate = null)
     {
         $field = new RelationField(
             $model,
@@ -41,6 +42,7 @@ class Relation extends ViewComponent
             $relationName, 
             $relationColumn,
             $validation,
+            $validateEach,
             $thumbnailed,
             $thumbnailWidth,
             $multiple,
@@ -56,7 +58,8 @@ class Relation extends ViewComponent
             $configPayload = $field->resolveFromComponentAttribute()->getValues();
 
             $this->relationName = Crypt::encryptString($configPayload['relation_name']);
-            $this->validation = Crypt::encryptString(serialize($configPayload['validation']));
+            $this->validation = $configPayload['rules'] ? Crypt::encryptString(serialize($configPayload['rules'])) : null;
+            $this->validateEach = $configPayload['eachRules'] ? Crypt::encryptString(serialize($configPayload['eachRules'])) : null;
         }
 
         $this->field_id = 'relation:'.bin2hex(random_bytes(16));

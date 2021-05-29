@@ -12,7 +12,8 @@ class Relation implements Assemble {
     public $model;
     public $relationName;
     public $relationColumn;
-    public $validation;
+    public $rules;
+    public $eachItemRules;
     public $thumbnailed;
     public $thumbnailWidth;
     public $multiple;
@@ -42,6 +43,7 @@ class Relation implements Assemble {
         $relationName = null, 
         $relationColumn = null, 
         $validation = null, 
+        $validateEach = null, 
         $thumbnailed = false, 
         $thumbnailWidth = 30, 
         $multiple = true, 
@@ -53,7 +55,8 @@ class Relation implements Assemble {
         $this->id = $id;
         $this->relationName = $relationName;
         $this->relationColumn = $relationColumn;
-        $this->validation = $validation;
+        $this->rules = $validation;
+        $this->eachItemRules = $validateEach;
         $this->thumbnailed = $thumbnailed;
         $this->thumbnailWidth = $thumbnailWidth;
         $this->multiple = $multiple;
@@ -100,7 +103,8 @@ class Relation implements Assemble {
         $this->authorizeUsing = $relationManager->authorizeUsing;
         $this->bypassAuthorize = $relationManager->bypassAuthorize;
 
-        $this->validation = $relationManager->rules;
+        $this->rules = $relationManager->rules;
+        $this->eachItemRules = $relationManager->eachItemRules;
         $this->middlewares = $relationManager->middlewares;
 
         if($relationManager->renderPartial) {
@@ -200,7 +204,8 @@ class Relation implements Assemble {
             'thumbnail_width' => $this->thumbnailWidth, 
             'authorize_using' => $this->authorizeUsing, 
             'bypass_authorize' => $this->bypassAuthorize, 
-            'validation' => $this->validation, 
+            'rules' => $this->rules, 
+            'eachRules' => $this->eachItemRules,
             'middlewares' => $this->middlewares, 
         ];
     }

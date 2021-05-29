@@ -11,6 +11,7 @@ class RelationManager {
     public $renderPartial;
     public $renderQuery;
     public $rules;
+    public $eachItemRules;
     public $middlewares = null;
     public $renderUsing = null;
     public $thumbnail = false;
@@ -62,6 +63,11 @@ class RelationManager {
 
     public function validation($rules) {
         $this->rules = $rules;
+        return $this;
+    }
+
+    public function validateEach($rules) {
+        $this->eachItemRules = $rules;
         return $this;
     }
 

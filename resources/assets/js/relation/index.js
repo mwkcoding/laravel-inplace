@@ -54,6 +54,7 @@ export default function RelationEditor(props) {
                 id: props.id,
                 model: props.model,
                 rules: props.rules,
+                eachRules: props.eachRules,
                 relationName: props.relationName,
             })
         })
