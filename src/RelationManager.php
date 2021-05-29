@@ -10,6 +10,8 @@ class RelationManager {
     public $authorizeUsing = null;
     public $renderPartial;
     public $renderQuery;
+    public $rules;
+    public $middlewares = null;
     public $renderUsing = null;
     public $thumbnail = false;
     public $thumbnailWidth = 30;
@@ -55,6 +57,16 @@ class RelationManager {
 
     public function bypassAuthorize() {
         $this->bypassAuthorize = true;
+        return $this;
+    }
+
+    public function validation($rules) {
+        $this->rules = $rules;
+        return $this;
+    }
+
+    public function middleware($middlewares) {
+        $this->middlewares = $middlewares;
         return $this;
     }
 
