@@ -33,6 +33,7 @@
             id: '{{ $id }}',
             model: '{{ $model }}',
             relationName: '{{ $relationName }}',
+            rules: '{{ $validation }}',
             options: @json($options),
             thumbnailed: '{{ (bool) $thumbnailed }}',
             thumbnailWidth: '{{ $thumbnailWidth }}',
