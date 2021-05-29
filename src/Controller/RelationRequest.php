@@ -20,7 +20,8 @@ class RelationRequest extends Controller {
     public $authorizeUsing = null;
     public $bypassAuthorize = false;
 
-    // public $rules = 'required';
+    public $rules = ['array'];
+    public $eachRules = null;
     // public $saveusing = null;
 
     public $values = [];
@@ -46,14 +47,43 @@ class RelationRequest extends Controller {
 
             $this->authorizeUsing = $config['authorize_using'];
             $this->bypassAuthorize = $config['bypass_authorize'];
+            $this->rules = $config['rules'] ?? ['array'];
+            $this->eachRules = $config['eachRules'];
 
             return;
         }
 
-        try {
-            $this->relationName = Crypt::decryptString(request('relationName'));
-        } catch (DecryptException $e) {
-            throw $e;
+        $this->hydrateRules(request('rules'), request('eachRules'));
+        $this->relationName = Crypt::decryptString(request('relationName'));
+    }
+
+    private function hydrateRules($rules, $eachRules) {
+        if($rules) {
+            try {
+                $rulesDecrypted = Crypt::decryptString($rules);
+
+                try {
+                    $this->rules = unserialize($rulesDecrypted);
+                } catch(\Exception $e) {
+                    $this->rules = ['array'];
+                }
+            } catch (DecryptException $e) {
+                throw $e;
+            }
+        }
+
+        if($eachRules) {
+            try {
+                $rulesDecrypted = Crypt::decryptString($eachRules);
+
+                try {
+                    $this->eachRules = unserialize($rulesDecrypted);
+                } catch(\Exception $e) {
+                    $this->eachRules = null;
+                }
+            } catch (DecryptException $e) {
+                throw $e;
+            }
         }
     }
 
@@ -61,6 +91,12 @@ class RelationRequest extends Controller {
         if(! $this->bypassAuthorize) {
             Authorize::allowed($this->model, $this->authorizeUsing);
         }
+
+        $rules = ['values' => $this->rules];
+
+        if($this->eachRules) { $rules['values.*'] = $this->eachRules; }
+
+        Validator::make(['values' => $request->input('values')], $rules)->validate();
 
         // db perform fail
         return [
