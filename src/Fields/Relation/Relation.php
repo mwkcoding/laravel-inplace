@@ -27,6 +27,7 @@ class Relation implements Assemble {
     private $authorizeUsing = null;
     private $bypassAuthorize = false;
     private $middlewares = null;
+    private $saveUsing = null;
 
     private $modelFormatted;
     private $relation;
@@ -106,6 +107,7 @@ class Relation implements Assemble {
         $this->rules = $relationManager->rules;
         $this->eachItemRules = $relationManager->eachItemRules;
         $this->middlewares = $relationManager->middlewares;
+        $this->saveUsing = $relationManager->saveUsingInvokable;
 
         if($relationManager->renderPartial) {
             $this->renderValue = $this->renderUsingPartial($relation, $relationManager->renderPartial, $relationManager->renderQuery);
@@ -207,6 +209,7 @@ class Relation implements Assemble {
             'rules' => $this->rules, 
             'eachRules' => $this->eachItemRules,
             'middlewares' => $this->middlewares, 
+            'save_using' => $this->saveUsing, 
         ];
     }
 }

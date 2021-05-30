@@ -16,6 +16,11 @@ class CustomEditableException extends InvalidArgumentException
         return new static("Class `{$path}` not found");
     }
 
+    public static function notCallable()
+    {
+        return new static("Custom saveas needs to be an invokable object");
+    }
+
     public static function missing()
     {
         return new static("Custom editable `save` method not callable or missing");

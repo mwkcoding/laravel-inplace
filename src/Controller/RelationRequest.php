@@ -3,13 +3,15 @@
 namespace devsrv\inplace\Controller;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Contracts\Encryption\DecryptException;
-use Illuminate\Support\Facades\Crypt;
-use devsrv\inplace\Traits\ModelResolver;
-use devsrv\inplace\Fields\Relation\Relation;
-use Illuminate\Routing\Controller;
 use devsrv\inplace\Authorize;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Database\Eloquent\Model;
+use devsrv\inplace\Traits\ModelResolver;
+use Illuminate\Support\Facades\Validator;
+use devsrv\inplace\Fields\Relation\Relation;
+use Illuminate\Contracts\Encryption\DecryptException;
+use devsrv\inplace\Exceptions\CustomEditableException;
 
 class RelationRequest extends Controller {
     use ModelResolver;
@@ -23,7 +25,7 @@ class RelationRequest extends Controller {
 
     public $rules = ['array'];
     public $eachRules = null;
-    // public $saveusing = null;
+    public $saveUsing = null;
 
     public $values = [];
 
@@ -54,6 +56,8 @@ class RelationRequest extends Controller {
                                 array_merge($this->middlewares, $config['middlewares']) : 
                                 array_merge($this->middlewares, [$config['middlewares']]);
         }
+
+        $this->saveUsing = $config['save_using'];
     }
 
     private function hydrate()
@@ -122,11 +126,40 @@ class RelationRequest extends Controller {
         $this->authorize();
 
         $this->validate();
+
+        if($this->saveUsing) {
+            return $this->customSave($request);
+        }
+
+        if($this->model->{$this->relationName}()->sync($request->input('values'))) {
+            return [
+                'success' => 1,
+                'message' => "saved !"
+            ];
+        }
         
-        // db perform fail
         return [
-            'success' => 1,
+            'success' => 0,
             'message' => "couldn't save data"
+        ];
+    }
+
+    protected function customSave(Request $request) {
+        $saveUsing = $this->saveUsing;
+        
+        throw_if(
+            ! is_callable($this->saveUsing), CustomEditableException::notCallable(), 'needs to be invokable'
+        );
+        
+        $status = $saveUsing($this->model, $this->relationName, $request->input('values'));
+
+        if(! is_array($status) || ! isset($status['success'])) {
+            throw CustomEditableException::badFormat();
+        }
+
+        return [
+            'success' => $status['success'],
+            'message' => (bool) $status['success'] === false ? (isset($status['message'])? $status['message'] : 'Error saving data!') : ''
         ];
     }
 }

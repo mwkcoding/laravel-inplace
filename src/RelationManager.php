@@ -17,6 +17,7 @@ class RelationManager {
     public $thumbnail = false;
     public $thumbnailWidth = 30;
     public $multiple = true;
+    public $saveUsingInvokable = null;
     public $resolveThumbnailUsing = null;
     public $filterOptionsQuery;
 
@@ -85,6 +86,11 @@ class RelationManager {
         $this->thumbnail = true;
         $this->thumbnailWidth = $width;
         $this->resolveThumbnailUsing = $reolveUsing;
+        return $this;
+    }
+
+    public function saveUsing($invokable) {
+        $this->saveUsingInvokable = $invokable;
         return $this;
     }
 }
