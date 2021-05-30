@@ -61,7 +61,7 @@ export default function RelationEditor(props) {
         .then(res => {
             if(res.status === 422) setError({has: true, type: 'Validation Error !', message: ''});
             else if(res.status === 403) setError({has: true, type: 'Permission restricted !', message: ''});
-            else if(res.status >= 500) setError({has: true, type: 'Error saving content !', message: ''});
+            else if(res.status >= 500) setError({has: true, type: 'Server Error !', message: ''});
 
             return res.json();
         })
@@ -90,7 +90,7 @@ export default function RelationEditor(props) {
             return;
         })
         .catch(err => {
-            setError({has: true, message: 'Error saving content !'});
+            setError({has: true, type: 'Network request failed !', message: 'Error saving content !'});
 
             dispatchErrorEvent();
         })
