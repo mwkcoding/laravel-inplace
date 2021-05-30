@@ -27,6 +27,7 @@ class Relation
             ->bypassAuthorize()
             ->validation(['required', 'array'])
             ->validateEach(['in:5,6'])
+            ->middleware(['auth', 'foo'])
             ->multiple(false),*/
 
 
