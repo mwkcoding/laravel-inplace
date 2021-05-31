@@ -52,26 +52,32 @@ class Relation extends ViewComponent
 
         if($id) {
             $this->id = Crypt::encryptString($id);
-            $configPayload = $field->resolveFromFieldMaker()->getValues();
+
+            $optionsResolver = $field->resolveFromFieldMaker();
+
+            $config = $optionsResolver->getConfigs();
+            $values = $optionsResolver->getValues();
         }
         else {
-            $configPayload = $field->resolveFromComponentAttribute()->getValues();
+            $optionsResolver = $field->resolveFromComponentAttribute();
+            $config = $optionsResolver->getConfigs();
+            $values = $optionsResolver->getValues();
 
-            $this->relationName = Crypt::encryptString($configPayload['relation_name']);
-            $this->validation = $configPayload['rules'] ? Crypt::encryptString(serialize($configPayload['rules'])) : null;
-            $this->validateEach = $configPayload['eachRules'] ? Crypt::encryptString(serialize($configPayload['eachRules'])) : null;
+            $this->relationName = Crypt::encryptString($config['relation_name']);
+            $this->validation = $config['rules'] ? Crypt::encryptString(serialize($config['rules'])) : null;
+            $this->validateEach = $config['eachRules'] ? Crypt::encryptString(serialize($config['eachRules'])) : null;
         }
 
         $this->field_id = 'relation:'.bin2hex(random_bytes(16));
         $this->csrf_token = csrf_token();
         $this->save_route = route('inplace.relation.save');
-        $this->model = Crypt::encryptString($configPayload['model']);
-        $this->options = $configPayload['options'];
-        $this->multiple = $configPayload['multiple'];
-        $this->thumbnailed = $configPayload['thumbnailed'];
-        $this->thumbnailWidth = $configPayload['thumbnail_width'];
-        $this->renderValue = $configPayload['render_current'];
-        $this->currentValues = $configPayload['current_values'];
+        $this->model = Crypt::encryptString($config['model']);
+        $this->multiple = $config['multiple'];
+        $this->thumbnailed = $config['thumbnailed'];
+        $this->thumbnailWidth = $config['thumbnail_width'];
+        $this->renderValue = $optionsResolver->getCurrentRendered();
+        $this->options = $values['options'];
+        $this->currentValues = $values['current_values'];
     }
     
 
