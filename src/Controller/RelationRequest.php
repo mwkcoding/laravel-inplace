@@ -42,7 +42,7 @@ class RelationRequest extends Controller {
             throw $e;
         }
 
-        $config = (new Relation($this->model, $id))->resolveFromFieldMaker()->getValues();
+        $config = (new Relation($this->model, $id))->resolveFromFieldMaker()->getConfigs();
 
         $this->relationName = $config['relation_name'];
 
