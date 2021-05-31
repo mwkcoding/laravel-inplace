@@ -18,11 +18,12 @@ class Relation implements Assemble {
     public $thumbnailWidth;
     public $multiple;
     public $renderTemplate;
+    public $renderQuery = null;
+    public $renderUsing = null;
     public $filterOptionsQuery;
 
     public $relationPrimaryKey;
     public $resolveThumbnail = null;
-    public $renderValue;
 
     private $authorizeUsing = null;
     private $bypassAuthorize = false;
@@ -33,6 +34,7 @@ class Relation implements Assemble {
     private $relation;
     private $relatedModel;
     
+    private static $store = [];
 
     const SUPPORTED_RELATIONS = [
         'BelongsToMany'
@@ -77,8 +79,6 @@ class Relation implements Assemble {
         $this->relatedModel = $relatedModel;
         $this->relationPrimaryKey = $relatedModel->getKeyName();
 
-        $this->renderValue = $this->renderTemplate? $this->renderUsingPartial($relation, $this->renderTemplate) : $this->renderDefault($relation, $this->relationColumn);
-
         return $this;
     }
 
@@ -108,16 +108,9 @@ class Relation implements Assemble {
         $this->eachItemRules = $relationManager->eachItemRules;
         $this->middlewares = $relationManager->middlewares;
         $this->saveUsing = $relationManager->saveUsingInvokable;
-
-        if($relationManager->renderPartial) {
-            $this->renderValue = $this->renderUsingPartial($relation, $relationManager->renderPartial, $relationManager->renderQuery);
-        }
-        else if($relationManager->renderUsing) {
-            $this->renderValue = $this->renderUsingClosure($relation, $relationManager->renderUsing);
-        }
-        else {
-            $this->renderValue = $this->renderDefault($relation, $relationManager->column);
-        }
+        $this->renderTemplate = $relationManager->renderPartial;
+        $this->renderQuery = $relationManager->renderQuery;
+        $this->renderUsing = $relationManager->renderUsing;
 
         return $this;
     }
@@ -128,7 +121,10 @@ class Relation implements Assemble {
 
         [$modelClass, $primaryKeyValue] = explode(':', $modelString);
 
-        $parentModel = $modelClass::findOrFail($primaryKeyValue);
+        if(! $parentModel = $this->getMemoized($modelString, true)) {
+            $parentModel = $modelClass::findOrFail($primaryKeyValue);
+            $this->memoize($modelString, $parentModel, true);
+        }
 
         try {
             $relation = $parentModel->{$relationName}();
@@ -144,7 +140,9 @@ class Relation implements Assemble {
 
     private function renderUsingPartial($relation, $partial, $mergeQuery = null) {
         $query = is_callable($mergeQuery) ? $mergeQuery(clone $relation) : $relation;
-        return view($partial, ['items' => $query->get()]);
+        $renderQueryResult = $query->get();
+
+        return view($partial, ['items' => $renderQueryResult]);
     }
 
     private function renderUsingClosure($relation, callable $mergeQuery) {
@@ -156,7 +154,12 @@ class Relation implements Assemble {
     }
 
     private function getOptions() {
-        return $this->deriveOptions($this->relatedModel, $this->relationColumn, $this->filterOptionsQuery);
+        if(! $options = $this->getMemoized('options')) {
+            $options = $this->deriveOptions($this->relatedModel, $this->relationColumn, $this->filterOptionsQuery);
+            $this->memoize('options', $options);
+        }
+
+        return $options;
     }
 
     private function deriveOptions($relatedModel, $relationColumn, $withQuery) {
@@ -168,7 +171,7 @@ class Relation implements Assemble {
             $relatedModel = $withQuery($relatedModel);
         }
 
-        $relatedList = $relatedModel->get();
+        $relatedList = $relatedModel->orderBy($relationColumn)->get();
 
         $allOptions = [];
 
@@ -194,13 +197,71 @@ class Relation implements Assemble {
         return $model->inplaceThumb ?? null;
     }
 
+    private function memokey() {
+        if($this->id) {
+            $key = $this->id;
+        }
+        else {
+            [$modelClassName] = explode(':', $this->modelFormatted);
+            $key = $modelClassName . ':' . $this->relationName;
+        }
+
+        return $key;
+    }
+
+    private function getMemoized($item, $global = false) {
+        if($global) {
+            if(! isset(static::$store['global'][$item])) return false;
+            return static::$store['global'][$item];
+        }
+
+        $memoKey = $this->memokey();
+
+        if(! isset(static::$store[$item][$memoKey])) {
+            return false;
+        }
+
+        return static::$store[$item][$memoKey];
+    }
+
+    private function memoize($key, $value, $global = false) {
+        if($global) {
+            static::$store['global'][$key] = $value;
+            return;
+        }
+
+        $memoKey = $this->memokey();
+        static::$store[$key][$memoKey] = $value;
+    }
+
+    public function getCurrentRendered() {
+        if($this->id) {
+            if($this->renderTemplate) {
+                return $this->renderUsingPartial($this->relation, $this->renderTemplate, $this->renderQuery);
+            }
+            else if($this->renderUsing) {
+                return $this->renderUsingClosure($this->relation, $this->renderUsing);
+            }
+
+            return $this->renderDefault($this->relation, $this->relationColumn);
+        }
+        
+        $rendered = $this->renderTemplate? $this->renderUsingPartial($this->relation, $this->renderTemplate) : $this->renderDefault($this->relation, $this->relationColumn);
+        
+        return $rendered;
+    }
+
     public function getValues() {
+        return [
+            'options' => $this->getOptions(),
+            'current_values' => $this->relation->get()->pluck($this->relationPrimaryKey)->all()
+        ];
+    }
+
+    public function getConfigs() {
         return [
             'model' => $this->modelFormatted,
             'relation_name' => $this->relationName,
-            'options' => $this->getOptions(),
-            'current_values' => $this->relation->get()->pluck($this->relationPrimaryKey)->all(),
-            'render_current' => $this->renderValue,
             'multiple' => $this->multiple,
             'thumbnailed' => $this->thumbnailed, 
             'thumbnail_width' => $this->thumbnailWidth, 

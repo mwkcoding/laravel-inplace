@@ -8,7 +8,7 @@ class RelationManager {
     public $column;
     public $bypassAuthorize = false;
     public $authorizeUsing = null;
-    public $renderPartial;
+    public $renderPartial = null;
     public $renderQuery;
     public $rules;
     public $eachItemRules;
