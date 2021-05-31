@@ -7,5 +7,5 @@ interface Assemble {
 
     public function resolveFromFieldMaker();
 
-    public function getValues();
+    public function getConfigs();
 }
