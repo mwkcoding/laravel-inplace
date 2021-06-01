@@ -4,6 +4,7 @@ namespace devsrv\inplace\Fields\Relation;
 use devsrv\inplace\Contracts\Assemble;
 use devsrv\inplace\Exceptions\RelationException;
 use devsrv\inplace\Traits\{ ModelResolver, ConfigResolver };
+use devsrv\inplace\Memo;
 
 class Relation implements Assemble {
     use ModelResolver, ConfigResolver;
@@ -34,7 +35,7 @@ class Relation implements Assemble {
     private $relation;
     private $relatedModel;
     
-    private static $store = [];
+    private $memo;
 
     const SUPPORTED_RELATIONS = [
         'BelongsToMany'
@@ -115,15 +116,27 @@ class Relation implements Assemble {
         return $this;
     }
 
+    private function initMemo($modelFormatted, $relationName) {
+        if($this->id) {
+            $this->memo = Memo::key( $this->id );
+            return;
+        }
+
+        [$modelClassName] = explode(':', $modelFormatted);
+        $this->memo = Memo::key( $modelClassName . ':' . $relationName );
+    }
+
     private function validate($model, $relationName)
     {
         $modelString = $this->resolveModel($model);
 
+        $this->initMemo($modelString, $relationName);
+
         [$modelClass, $primaryKeyValue] = explode(':', $modelString);
 
-        if(! $parentModel = $this->getMemoized($modelString, true)) {
+        if(! $parentModel = $this->memo->getMemoized($modelString, true)) {
             $parentModel = $modelClass::findOrFail($primaryKeyValue);
-            $this->memoize($modelString, $parentModel, true);
+            $this->memo->memoize($modelString, $parentModel, true);
         }
 
         try {
@@ -154,9 +167,9 @@ class Relation implements Assemble {
     }
 
     private function getOptions() {
-        if(! $options = $this->getMemoized('options')) {
+        if(! $options = $this->memo->getMemoized('options')) {
             $options = $this->deriveOptions($this->relatedModel, $this->relationColumn, $this->filterOptionsQuery);
-            $this->memoize('options', $options);
+            $this->memo->memoize('options', $options);
         }
 
         return $options;
@@ -195,43 +208,6 @@ class Relation implements Assemble {
         }
 
         return $model->inplaceThumb ?? null;
-    }
-
-    private function memokey() {
-        if($this->id) {
-            $key = $this->id;
-        }
-        else {
-            [$modelClassName] = explode(':', $this->modelFormatted);
-            $key = $modelClassName . ':' . $this->relationName;
-        }
-
-        return $key;
-    }
-
-    private function getMemoized($item, $global = false) {
-        if($global) {
-            if(! isset(static::$store['global'][$item])) return false;
-            return static::$store['global'][$item];
-        }
-
-        $memoKey = $this->memokey();
-
-        if(! isset(static::$store[$item][$memoKey])) {
-            return false;
-        }
-
-        return static::$store[$item][$memoKey];
-    }
-
-    private function memoize($key, $value, $global = false) {
-        if($global) {
-            static::$store['global'][$key] = $value;
-            return;
-        }
-
-        $memoKey = $this->memokey();
-        static::$store[$key][$memoKey] = $value;
     }
 
     public function getCurrentRendered() {
