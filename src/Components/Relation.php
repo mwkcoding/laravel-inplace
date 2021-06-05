@@ -77,7 +77,7 @@ class Relation extends ViewComponent
         $this->multiple = $config['multiple'];
         $this->thumbnailed = $config['thumbnailed'];
         $this->thumbnailWidth = $config['thumbnail_width'];
-        $this->renderValue = $optionsResolver->getCurrentRendered();
+        $this->renderValue = $values['render'];
         $this->options = $values['options'];
         $this->currentValues = $values['current_values'];
     }
