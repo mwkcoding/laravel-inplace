@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use devsrv\inplace\Authorize;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Crypt;
-use Illuminate\Database\Eloquent\Model;
 use devsrv\inplace\Traits\ModelResolver;
 use Illuminate\Support\Facades\Validator;
 use devsrv\inplace\Fields\Relation\Relation;
@@ -23,7 +22,6 @@ class RelationRequest extends Controller {
     public $relationColumn = null;
     public $renderTemplate = null;
     public $renderUsing = null;
-    public $renderQuery = null;
 
     public $authorizeUsing = null;
     public $bypassAuthorize = false;
@@ -70,7 +68,6 @@ class RelationRequest extends Controller {
 
         $this->renderUsing = $config['render_using'];
         $this->renderTemplate = $config['render_template'];
-        $this->renderQuery = $config['render_query'];
     }
 
     private function resolveFromAttributes() {
@@ -144,11 +141,10 @@ class RelationRequest extends Controller {
     private function render()
     {
         return Draw::using(
-            $this->model->{$this->relationName}(), 
+            $this->model->{$this->relationName}, 
             $this->relationColumn, 
             $this->renderUsing, 
-            $this->renderTemplate, 
-            $this->renderQuery)->getRendered();
+            $this->renderTemplate)->getRendered();
     }
 
     public function save(Request $request) {
