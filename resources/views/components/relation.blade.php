@@ -33,6 +33,8 @@
             id: '{{ $id }}',
             model: '{{ $model }}',
             relationName: '{{ $relationName }}',
+            relColumn: '{{ $relationColumn }}',
+            renderTemplate: '{{ $renderTemplate }}',
             rules: '{{ $validation }}',
             eachRules: '{{ $validateEach }}',
             options: @json($options),

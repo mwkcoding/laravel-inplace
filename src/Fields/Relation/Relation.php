@@ -5,6 +5,7 @@ use devsrv\inplace\Contracts\Assemble;
 use devsrv\inplace\Exceptions\RelationException;
 use devsrv\inplace\Traits\{ ModelResolver, ConfigResolver };
 use devsrv\inplace\Memo;
+use devsrv\inplace\Draw;
 
 class Relation implements Assemble {
     use ModelResolver, ConfigResolver;
@@ -71,7 +72,7 @@ class Relation implements Assemble {
     public function resolveFromComponentAttribute() 
     {
         throw_if(is_null($this->relationName), RelationException::missing('relation name required'));
-        throw_if(is_null($this->relationColumn), RelationException::missing('relation column required'));
+        throw_unless($this->relationColumn, RelationException::missing('relation column required'));
 
         [$modelFormatted, $relation, $relatedModel] = $this->validate($this->model, $this->relationName);
 
@@ -151,21 +152,6 @@ class Relation implements Assemble {
         return [$modelString, $relation, $relatedModel];
     }
 
-    private function renderUsingPartial($relation, $partial, $mergeQuery = null) {
-        $query = is_callable($mergeQuery) ? $mergeQuery(clone $relation) : $relation;
-        $renderQueryResult = $query->get();
-
-        return view($partial, ['items' => $renderQueryResult]);
-    }
-
-    private function renderUsingClosure($relation, callable $mergeQuery) {
-        return $mergeQuery(clone $relation);
-    }
-
-    private function renderDefault($relation, $relationColumn) {
-        return $relation->pluck($relationColumn)->implode(', ');
-    }
-
     private function getOptions() {
         if(! $options = $this->memo->getMemoized('options')) {
             $options = $this->deriveOptions($this->relatedModel, $this->relationColumn, $this->filterOptionsQuery);
@@ -211,20 +197,14 @@ class Relation implements Assemble {
     }
 
     public function getCurrentRendered() {
-        if($this->id) {
-            if($this->renderTemplate) {
-                return $this->renderUsingPartial($this->relation, $this->renderTemplate, $this->renderQuery);
-            }
-            else if($this->renderUsing) {
-                return $this->renderUsingClosure($this->relation, $this->renderUsing);
-            }
+        return Draw::using(
+            $this->relation, 
+            $this->relationColumn, 
+            $this->renderUsing, 
+            $this->renderTemplate, 
+            $this->renderQuery)->getRendered();
 
-            return $this->renderDefault($this->relation, $this->relationColumn);
-        }
-        
-        $rendered = $this->renderTemplate? $this->renderUsingPartial($this->relation, $this->renderTemplate) : $this->renderDefault($this->relation, $this->relationColumn);
-        
-        return $rendered;
+        // return Draw::usingPayload($this->relation->get(), $this->relationColumn, 'partials.badge-list');
     }
 
     public function getValues() {
@@ -238,6 +218,10 @@ class Relation implements Assemble {
         return [
             'model' => $this->modelFormatted,
             'relation_name' => $this->relationName,
+            'relation_column' => $this->relationColumn,
+            'render_using' => $this->renderUsing,
+            'render_template' => $this->renderTemplate,
+            'render_query' => $this->renderQuery,
             'multiple' => $this->multiple,
             'thumbnailed' => $this->thumbnailed, 
             'thumbnail_width' => $this->thumbnailWidth, 

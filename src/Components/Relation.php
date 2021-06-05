@@ -64,6 +64,8 @@ class Relation extends ViewComponent
             $values = $optionsResolver->getValues();
 
             $this->relationName = Crypt::encryptString($config['relation_name']);
+            $this->relationColumn = Crypt::encryptString($relationColumn);
+            $this->renderTemplate = $renderTemplate ? Crypt::encryptString($renderTemplate) : null;
             $this->validation = $config['rules'] ? Crypt::encryptString(serialize($config['rules'])) : null;
             $this->validateEach = $config['eachRules'] ? Crypt::encryptString(serialize($config['eachRules'])) : null;
         }

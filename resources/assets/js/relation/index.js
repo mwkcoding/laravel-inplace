@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import BasicCheckbox from './fields/checkbox';
 
 export default function RelationEditor(props) {
-    const skipPropsPass = ['model', 'relationName'];
+    const skipPropsPass = ['model', 'relationName', 'relColumn', 'renderTemplate'];
 
     const [error, setError] = useState({has: false, type: '', message: ''});
     const [success, setSuccess] = useState(false);
@@ -56,6 +56,8 @@ export default function RelationEditor(props) {
                 rules: props.rules,
                 eachRules: props.eachRules,
                 relationName: props.relationName,
+                relColumn: props.relColumn,
+                renderTemplate: props.renderTemplate,
             })
         })
         .then(res => {

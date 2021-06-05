@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Validator;
 use devsrv\inplace\Fields\Relation\Relation;
 use Illuminate\Contracts\Encryption\DecryptException;
 use devsrv\inplace\Exceptions\CustomEditableException;
+use devsrv\inplace\Draw;
 
 class RelationRequest extends Controller {
     use ModelResolver;
@@ -19,6 +20,11 @@ class RelationRequest extends Controller {
     public $id = null;
     public $model = null;
     public $relationName = null;
+    public $relationColumn = null;
+    public $renderTemplate = null;
+    public $renderUsing = null;
+    public $renderQuery = null;
+
     public $authorizeUsing = null;
     public $bypassAuthorize = false;
     public $middlewares = [];
@@ -37,14 +43,15 @@ class RelationRequest extends Controller {
 
     private function resolveFromID() {
         try {
-            $id = Crypt::decryptString(request('id'));
+            $this->id = Crypt::decryptString(request('id'));
         } catch (DecryptException $e) {
             throw $e;
         }
 
-        $config = (new Relation($this->model, $id))->resolveFromFieldMaker()->getConfigs();
+        $config = (new Relation($this->model, $this->id ))->resolveFromFieldMaker()->getConfigs();
 
         $this->relationName = $config['relation_name'];
+        $this->relationColumn = $config['relation_column'];
 
         $this->authorizeUsing = $config['authorize_using'];
         $this->bypassAuthorize = $config['bypass_authorize'];
@@ -52,12 +59,24 @@ class RelationRequest extends Controller {
         $this->eachRules = $config['eachRules'];
 
         if($config['middlewares']) {
-            $this->middlewares = is_array($config['middlewares']) ? 
-                                array_merge($this->middlewares, $config['middlewares']) : 
-                                array_merge($this->middlewares, [$config['middlewares']]);
+            $suppliedMiddlewares = $config['middlewares'];
+
+            $this->middlewares = is_array($suppliedMiddlewares) ? 
+                                array_merge($this->middlewares, $suppliedMiddlewares) : 
+                                array_merge($this->middlewares, [$suppliedMiddlewares]);
         }
 
         $this->saveUsing = $config['save_using'];
+
+        $this->renderUsing = $config['render_using'];
+        $this->renderTemplate = $config['render_template'];
+        $this->renderQuery = $config['render_query'];
+    }
+
+    private function resolveFromAttributes() {
+        $this->relationName = Crypt::decryptString(request('relationName'));
+        $this->relationColumn = Crypt::decryptString(request('relColumn'));
+        $this->renderTemplate = request()->filled('renderTemplate') ? Crypt::decryptString(request('renderTemplate')) : null;
     }
 
     private function hydrate()
@@ -75,7 +94,7 @@ class RelationRequest extends Controller {
 
         $this->hydrateRules(request('rules'), request('eachRules'));
 
-        $this->relationName = Crypt::decryptString(request('relationName'));
+        $this->resolveFromAttributes();
     }
 
     private function hydrateRules($rules, $eachRules) {
@@ -122,6 +141,16 @@ class RelationRequest extends Controller {
         Validator::make(['values' => request()->input('values')], $rules)->validate();
     }
 
+    private function render()
+    {
+        return Draw::using(
+            $this->model->{$this->relationName}(), 
+            $this->relationColumn, 
+            $this->renderUsing, 
+            $this->renderTemplate, 
+            $this->renderQuery)->getRendered();
+    }
+
     public function save(Request $request) {
         $this->authorize();
 
@@ -134,7 +163,8 @@ class RelationRequest extends Controller {
         if($this->model->{$this->relationName}()->sync($request->input('values'))) {
             return [
                 'success' => 1,
-                'message' => "saved !"
+                'message' => "saved !",
+                'redner' => $this->render()
             ];
         }
         
@@ -159,7 +189,8 @@ class RelationRequest extends Controller {
 
         return [
             'success' => $status['success'],
-            'message' => (bool) $status['success'] === false ? (isset($status['message'])? $status['message'] : 'Error saving data!') : ''
+            'message' => (bool) $status['success'] === false ? (isset($status['message'])? $status['message'] : 'Error saving data!') : '',
+            'redner' => $status['success'] ? $this->render() : ''
         ];
     }
 }
