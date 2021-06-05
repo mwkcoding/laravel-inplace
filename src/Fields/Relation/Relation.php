@@ -6,6 +6,7 @@ use devsrv\inplace\Exceptions\RelationException;
 use devsrv\inplace\Traits\{ ModelResolver, ConfigResolver };
 use devsrv\inplace\Memo;
 use devsrv\inplace\Draw;
+use Illuminate\Database\Eloquent\Model;
 
 class Relation implements Assemble {
     use ModelResolver, ConfigResolver;
@@ -20,7 +21,6 @@ class Relation implements Assemble {
     public $thumbnailWidth;
     public $multiple;
     public $renderTemplate;
-    public $renderQuery = null;
     public $renderUsing = null;
     public $filterOptionsQuery;
 
@@ -111,7 +111,6 @@ class Relation implements Assemble {
         $this->middlewares = $relationManager->middlewares;
         $this->saveUsing = $relationManager->saveUsingInvokable;
         $this->renderTemplate = $relationManager->renderPartial;
-        $this->renderQuery = $relationManager->renderQuery;
         $this->renderUsing = $relationManager->renderUsing;
 
         return $this;
@@ -196,21 +195,22 @@ class Relation implements Assemble {
         return $model->inplaceThumb ?? null;
     }
 
-    public function getCurrentRendered() {
-        return Draw::using(
-            $this->relation, 
-            $this->relationColumn, 
-            $this->renderUsing, 
-            $this->renderTemplate, 
-            $this->renderQuery)->getRendered();
-
-        // return Draw::usingPayload($this->relation->get(), $this->relationColumn, 'partials.badge-list');
-    }
-
     public function getValues() {
+        if($this->model instanceof Model) {
+            $relationValues = $this->model->relationLoaded($this->relationName) ? 
+                            $this->model->{$this->relationName} : $this->relation->get();
+        } else {
+            $relationValues = $this->relation->get();
+        }
+
         return [
             'options' => $this->getOptions(),
-            'current_values' => $this->relation->get()->pluck($this->relationPrimaryKey)->all()
+            'current_values' => $relationValues->pluck($this->relationPrimaryKey)->all(),
+            'render' => Draw::using(
+                $relationValues, 
+                $this->relationColumn, 
+                $this->renderUsing, 
+                $this->renderTemplate)->getRendered()
         ];
     }
 
@@ -221,7 +221,6 @@ class Relation implements Assemble {
             'relation_column' => $this->relationColumn,
             'render_using' => $this->renderUsing,
             'render_template' => $this->renderTemplate,
-            'render_query' => $this->renderQuery,
             'multiple' => $this->multiple,
             'thumbnailed' => $this->thumbnailed, 
             'thumbnail_width' => $this->thumbnailWidth, 
