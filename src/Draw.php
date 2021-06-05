@@ -2,21 +2,21 @@
 
 namespace devsrv\inplace;
 
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+
 class Draw {
-    public static $builder;
+    public static $valuesCollection;
     public static $columnName;
 
     public static $template;
-    public static $mergeQuery;
 
     public static $renderUsing;
 
-    public static function using($builder, $columnName, $renderUsing = null, $template = null, $mergeQuery = null) {
-        self::$builder = $builder;
+    public static function using(EloquentCollection $valuesCollection, $columnName, $renderUsing = null, $template = null) {
+        self::$valuesCollection = $valuesCollection;
         self::$columnName = $columnName;
         self::$renderUsing = $renderUsing;
         self::$template = $template;
-        self::$mergeQuery = $mergeQuery;
 
         return new self;
     }
@@ -38,17 +38,14 @@ class Draw {
     }
 
     private function renderUsingPartial() {
-        $query = is_callable(self::$mergeQuery) ? call_user_func(self::$mergeQuery, clone self::$builder) : self::$builder;
-        $renderQueryResult = $query->get();
-
-        return view(self::$template, ['items' => $renderQueryResult])->render();
+        return view(self::$template, ['items' => self::$valuesCollection])->render();
     }
 
     private function renderUsingClosure() {
-        return call_user_func(self::$renderUsing, clone self::$builder);
+        return call_user_func(self::$renderUsing, clone self::$valuesCollection);
     }
 
     private function renderDefault() {
-        return self::$builder->pluck(self::$columnName)->implode(', ');
+        return self::$valuesCollection->pluck(self::$columnName)->implode(', ');
     }
 }
