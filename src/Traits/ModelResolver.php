@@ -15,6 +15,8 @@ trait ModelResolver
             $primaryKeyValue = $model->getKey();
         }
         else {
+            throw_unless(is_string($model), ModelException::badFormat('namespace\Model:key or Model object'));
+
             try {
                 [$modelClass, $primaryKeyValue] = explode(':', $model);
             } catch (\Exception $th) {
