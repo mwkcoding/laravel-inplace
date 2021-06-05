@@ -9,7 +9,6 @@ class RelationManager {
     public $bypassAuthorize = false;
     public $authorizeUsing = null;
     public $renderPartial = null;
-    public $renderQuery;
     public $rules;
     public $eachItemRules;
     public $middlewares = null;
@@ -41,9 +40,8 @@ class RelationManager {
         return $this;
     }
 
-    public function renderTemplate(string $partial, $withQuery = null) {
+    public function renderTemplate(string $partial) {
         $this->renderPartial = $partial;
-        $this->renderQuery = $withQuery;
         return $this;
     }
 
