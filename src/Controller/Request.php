@@ -6,10 +6,9 @@ use Illuminate\Http\Request as HTTPRequest;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Validator;
 use devsrv\inplace\Exceptions\{ ModelException, CustomEditableException };
-use Illuminate\Contracts\Encryption\DecryptException;
-use Illuminate\Support\Facades\Crypt;
 use Illuminate\Routing\Controller;
 use devsrv\inplace\Traits\{ ConfigResolver, ModelResolver };
+use devsrv\inplace\Helper;
 
 class Request extends Controller{
     use AuthorizesRequests, ConfigResolver, ModelResolver;
@@ -37,11 +36,7 @@ class Request extends Controller{
         $this->resolveModelColumn(request('model'), request('column'));
 
         if(request()->filled('id')) {
-            try {
-                $id = Crypt::decryptString(request('id'));
-            } catch (DecryptException $e) {
-                throw $e;
-            }
+            $id = Helper::decrypt(request('id'));
 
             $this->inlineEditor = self::getConfig('inline', $id);
             $this->column = $this->inlineEditor->column;
@@ -104,11 +99,7 @@ class Request extends Controller{
         }
 
         if($column_encrypted) {
-            try {
-                $this->column = Crypt::decryptString($column_encrypted);
-            } catch (DecryptException $e) {
-                throw $e;
-            }
+            $this->column = Helper::decrypt($column_encrypted);
         }
     }
 
@@ -143,11 +134,7 @@ class Request extends Controller{
 
     private function hydrateSaveUsing($saveusing) {
         if($saveusing) {
-            try {
-                $this->saveusing = Crypt::decryptString($saveusing);
-            } catch (DecryptException $e) {
-                throw $e;
-            }
+            $this->saveusing = Helper::decrypt($saveusing);
         }
     }
 

@@ -3,8 +3,7 @@
 namespace devsrv\inplace\Traits;
 use Illuminate\Database\Eloquent\Model;
 use devsrv\inplace\Exceptions\ModelException;
-use Illuminate\Contracts\Encryption\DecryptException;
-use Illuminate\Support\Facades\Crypt;
+use devsrv\inplace\Helper;
 
 trait ModelResolver
 {
@@ -31,11 +30,7 @@ trait ModelResolver
 
     public function decryptModel($encrypted) : Model
     {
-        try {
-            $model = Crypt::decryptString($encrypted);
-        } catch (DecryptException $e) {
-            throw $e;
-        }
+        $model = Helper::decrypt($encrypted);
 
         try {
             [$modelClass, $primaryKeyValue] = explode(':', $model);

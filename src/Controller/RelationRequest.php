@@ -5,13 +5,12 @@ namespace devsrv\inplace\Controller;
 use Illuminate\Http\Request;
 use devsrv\inplace\Authorize;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Crypt;
 use devsrv\inplace\Traits\ModelResolver;
 use Illuminate\Support\Facades\Validator;
 use devsrv\inplace\Fields\Relation\Relation;
-use Illuminate\Contracts\Encryption\DecryptException;
 use devsrv\inplace\Exceptions\CustomEditableException;
 use devsrv\inplace\Draw;
+use devsrv\inplace\Helper;
 
 class RelationRequest extends Controller {
     use ModelResolver;
@@ -40,11 +39,7 @@ class RelationRequest extends Controller {
     }
 
     private function resolveFromID() {
-        try {
-            $this->id = Crypt::decryptString(request('id'));
-        } catch (DecryptException $e) {
-            throw $e;
-        }
+        $this->id = Helper::decrypt(request('id'));
 
         $config = (new Relation($this->model, $this->id ))->resolveFromFieldMaker()->getConfigs();
 
@@ -71,9 +66,9 @@ class RelationRequest extends Controller {
     }
 
     private function resolveFromAttributes() {
-        $this->relationName = Crypt::decryptString(request('relationName'));
-        $this->relationColumn = Crypt::decryptString(request('relColumn'));
-        $this->renderTemplate = request()->filled('renderTemplate') ? Crypt::decryptString(request('renderTemplate')) : null;
+        $this->relationName = Helper::decrypt(request('relationName'));
+        $this->relationColumn = Helper::decrypt(request('relColumn'));
+        $this->renderTemplate = request()->filled('renderTemplate') ? Helper::decrypt(request('renderTemplate')) : null;
     }
 
     private function hydrate()
@@ -96,30 +91,22 @@ class RelationRequest extends Controller {
 
     private function hydrateRules($rules, $eachRules) {
         if($rules) {
-            try {
-                $rulesDecrypted = Crypt::decryptString($rules);
+            $rulesDecrypted = Helper::decrypt($rules);
 
-                try {
-                    $this->rules = unserialize($rulesDecrypted);
-                } catch(\Exception $e) {
-                    $this->rules = ['array'];
-                }
-            } catch (DecryptException $e) {
-                throw $e;
+            try {
+                $this->rules = unserialize($rulesDecrypted);
+            } catch(\Exception $e) {
+                $this->rules = ['array'];
             }
         }
 
         if($eachRules) {
-            try {
-                $rulesDecrypted = Crypt::decryptString($eachRules);
+            $rulesDecrypted = Helper::decrypt($eachRules);
 
-                try {
-                    $this->eachRules = unserialize($rulesDecrypted);
-                } catch(\Exception $e) {
-                    $this->eachRules = null;
-                }
-            } catch (DecryptException $e) {
-                throw $e;
+            try {
+                $this->eachRules = unserialize($rulesDecrypted);
+            } catch(\Exception $e) {
+                $this->eachRules = null;
             }
         }
     }
