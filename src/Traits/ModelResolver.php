@@ -40,6 +40,6 @@ trait ModelResolver
         
         if(! class_exists($modelClass)) throw ModelException::notFound($modelClass);
 
-        return $modelClass::findOrFail($primaryKeyValue);
+        return $modelClass::select('id')->findOrFail($primaryKeyValue);
     }
 }

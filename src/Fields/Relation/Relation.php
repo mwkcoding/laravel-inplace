@@ -135,7 +135,7 @@ class Relation implements Assemble {
         [$modelClass, $primaryKeyValue] = explode(':', $modelString);
 
         if(! $parentModel = $this->memo->getMemoized($modelString, true)) {
-            $parentModel = $modelClass::findOrFail($primaryKeyValue);
+            $parentModel = $modelClass::select('id')->findOrFail($primaryKeyValue);
             $this->memo->memoize($modelString, $parentModel, true);
         }
 
