@@ -6,7 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use devsrv\inplace\Components\{
     Relation,
     InlineBasicCommon,
-    Inline,
+    Text,
 };
 use devsrv\inplace\Commands\GenerateConfig;
 use devsrv\inplace\InplaceConfig;
@@ -33,7 +33,7 @@ class InplaceServiceProvider extends ServiceProvider
 
         $this->loadViewComponentsAs('inplace', [
             InlineBasicCommon::class,
-            Inline::class,
+            Text::class,
             Relation::class,
         ]);
 

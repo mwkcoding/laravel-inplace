@@ -6,7 +6,7 @@ use Illuminate\View\Component;
 use Illuminate\Support\Facades\Crypt;
 use devsrv\inplace\Traits\{ ModelResolver, ConfigResolver };
 
-class Inline extends Component
+class Text extends Component
 {
     use ModelResolver, ConfigResolver;
 
@@ -63,6 +63,6 @@ class Inline extends Component
      */
     public function render()
     {
-        return view('inplace::components.inline');
+        return view('inplace::components.text');
     }
 }
