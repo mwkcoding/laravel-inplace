@@ -24,8 +24,7 @@
         csrf_token: '{{ $csrf_token }}'
     });
 </script>
-{{-- <script src="{{ asset('vendor/inplace/resources/assets/js/relation/bundle.js') }}"></script> --}}
-<script src="{{ asset('vendor/linked/js/relation/bundle.js') }}"></script>
+<script src="{{ asset('vendor/inplace/resources/assets/js/relation/bundle.js') }}"></script>
 @endonce
 
 <script>
