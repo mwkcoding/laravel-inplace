@@ -3,78 +3,103 @@
 namespace devsrv\inplace\Controller;
 
 use Illuminate\Http\Request as HTTPRequest;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Support\Facades\Validator;
 use devsrv\inplace\Exceptions\{ ModelException, CustomEditableException };
 use Illuminate\Routing\Controller;
-use devsrv\inplace\Traits\{ ConfigResolver, ModelResolver };
+use devsrv\inplace\Traits\{ ModelResolver };
 use devsrv\inplace\Helper;
+use devsrv\inplace\Fields\Text;
+use devsrv\inplace\Authorize;
 
 class Request extends Controller{
-    use AuthorizesRequests, ConfigResolver, ModelResolver;
+    use ModelResolver;
 
     public $id = null;
     public $model = null;
     public $column = null;
-    public $inlineEditor = null;
 
-    public $rules = 'required';
-    public $allowed = null;
-    public $saveusing = null;
+    public $saveUsing = null;
 
     public $content;
+
+    public $authorizeUsing = null;
+    public $bypassAuthorize = false;
+    public $middlewares = [];
+
+    public $rules = ['required'];
 
     public function __construct() {
         $this->hydrate();
 
-        $this->applyMiddleware();
+        $this->middleware($this->middlewares);
     }
 
     private function hydrate()
     {
+        $this->model = $this->decryptModel(request('model'));
         $this->content = request('content');
-        $this->resolveModelColumn(request('model'), request('column'));
+
+        $global_middlewares = config('inplace.middleware');
+        if($global_middlewares !== null) $this->middlewares = $global_middlewares;
 
         if(request()->filled('id')) {
-            $id = Helper::decrypt(request('id'));
-
-            $this->inlineEditor = self::getConfig('inline', $id);
-            $this->column = $this->inlineEditor->column;
-            $this->saveusing = $this->inlineEditor->saveUsingClass;
-            $this->rules = $this->inlineEditor->rules;
-            $this->allowed = $this->inlineEditor->authorize;
+            $this->resolveFromID();
 
             return;
         }
 
-        $this->allowed = request()->filled('authorize') ? (bool) request('authorize') : null;
-        $this->hydrateSaveUsing(request('saveusing'));
-        $this->hydrateRules(request('rules'));
+        $this->resolveFromAttributes();
     }
 
-    private function applyMiddleware() 
-    {
-        // if has field config
-        if($this->inlineEditor) {
-            if(! $this->inlineEditor->applyMiddleware) return;
+    private function resolveFromID() {
+        $this->id = Helper::decrypt(request('id'));
 
-            if($this->inlineEditor->middlewares) {
-                $this->middleware($this->inlineEditor->middlewares);
-                return;
+        $config = (new Text($this->model, $this->id ))->resolveFromFieldMaker()->getConfigs();
+
+        $this->column = $config['column'];
+
+        $this->authorizeUsing = $config['authorize_using'];
+        $this->bypassAuthorize = $config['bypass_authorize'];
+        $this->rules = $config['rules'] ?? ['required'];
+
+        if($config['middlewares']) {
+            $suppliedMiddlewares = $config['middlewares'];
+
+            $this->middlewares = is_array($suppliedMiddlewares) ? 
+                                array_merge($this->middlewares, $suppliedMiddlewares) : 
+                                array_merge($this->middlewares, [$suppliedMiddlewares]);
+        }
+
+        $this->saveUsing = $config['save_using'];
+    }
+
+    private function resolveFromAttributes() {
+        if(request()->filled('rules')) {
+            $rulesDecrypted = Helper::decrypt(request('rules'));
+
+            try {
+                $this->rules = unserialize($rulesDecrypted);
+            } catch(\Exception $e) {
+                $this->rules = ['required'];
             }
         }
 
-        // fallback to default i.e. apply any global config middlewares
-        $middlewares = config('inplace.middleware');
-        if($middlewares !== null) $this->middleware($middlewares);
+        $this->column = Helper::decrypt(request('column'));
+        $this->saveUsing = request()->filled('saveusing') ? Helper::decrypt(request('saveusing')) : null;
+    }
+
+    private function authorize() {
+        if(! $this->bypassAuthorize) {
+            Authorize::allowed($this->model, $this->authorizeUsing);
+        }
     }
 
     public function save(HTTPRequest $request) {
-        $this->isAuthorized();
+        $this->authorize();
 
         $this->validate();
 
-        if($this->saveusing) { return $this->customSave($this->model, $this->column, $this->content); }
+        if($this->saveUsing) { return $this->customSave(); }
         
         if(! $this->model || ! $this->column) throw ModelException::missing();
 
@@ -93,74 +118,32 @@ class Request extends Controller{
         ];
     }
 
-    private function resolveModelColumn($model_encrypted, $column_encrypted) {
-        if($model_encrypted) {
-            $this->model = $this->decryptModel($model_encrypted);
-        }
-
-        if($column_encrypted) {
-            $this->column = Helper::decrypt($column_encrypted);
-        }
-    }
-
-    private function hydrateRules($rules) {
-        if($rules) {
-            try {
-                $this->rules = unserialize($rules);
-            } catch(\Exception $e) {
-                // dump($e->getMessage());
-
-                $this->rules = $rules;
-            }
-        }
-    }
-
     private function validate() {
         Validator::make(['content' => $this->content], [
             'content' => $this->rules,
         ])->validate();
     }
 
-    protected function isAuthorized() {
-        if($this->allowed !== null) {
-            abort_unless($this->allowed, 403, 'unauthorized');
-            return;
-        }
-
-        $globalAuthorize = config('inplace.authorize');
-
-        if($globalAuthorize !== null && $globalAuthorize && $this->model) $this->authorize('update', $this->model);
-    }
-
-    private function hydrateSaveUsing($saveusing) {
-        if($saveusing) {
-            $this->saveusing = Helper::decrypt($saveusing);
-        }
-    }
-
-    protected function customSave($model, $column, $editedValue) {
-        if(! class_exists($this->saveusing)) { throw CustomEditableException::notFound($this->saveusing); }
-
-        $saveAs = new $this->saveusing;
+    protected function customSave() {
+        $saveUsing = $this->saveUsing;
         
-        if(! is_callable([$saveAs, 'save'])) throw CustomEditableException::missing();
+        throw_if(
+            ! is_callable($this->saveUsing), CustomEditableException::notCallable(), 'needs to be invokable'
+        );
+        
+        $status = $saveUsing($this->model, $this->column, $this->content);
 
-        $status = ($saveAs)->save($model, $column, $editedValue);
-
-        if(! is_array($status) || !isset($status['success'])) {
+        if(! is_array($status) || ! isset($status['success'])) {
             throw CustomEditableException::badFormat();
         }
 
-        if($status['success']) {
-            $this->value = $editedValue;
-            return [
-                'success' => 1
-            ];
-        }
+        $success = (bool) $status['success'];
+
+        if($success) $this->value = $this->content;
 
         return [
-            'success' => 0,
-            'message' => isset($status['message'])? $status['message'] : 'Error saving data!'
+            'success' => $success,
+            'message' => ! $success ? (isset($status['message'])? $status['message'] : 'Error saving data!') : '',
         ];
     }
 }
