@@ -5,9 +5,9 @@ namespace devsrv\inplace;
 use Illuminate\Support\ServiceProvider;
 use devsrv\inplace\Components\{
     Relation,
-    InlineBasicCommon,
     Text,
 };
+use devsrv\inplace\Components\Misc\InlineBasicCommon;
 use devsrv\inplace\Commands\GenerateConfig;
 use devsrv\inplace\InplaceConfig;
 

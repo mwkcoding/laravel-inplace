@@ -1,6 +1,6 @@
 <?php
 
-namespace devsrv\inplace\Components;
+namespace devsrv\inplace\Components\Misc;
 
 use Illuminate\View\Component;
 
@@ -24,6 +24,6 @@ class InlineBasicCommon extends Component
      */
     public function render()
     {
-        return view('inplace::components.inline-basic-common');
+        return view('inplace::components.misc.inline-basic-common');
     }
 }
