@@ -6,7 +6,7 @@
 
 <div>
 
-    {!! $renderValue !!}
+    <div id="_inplace-content:{{ $field_id }}">{!! $renderValue !!}</div>
 
     @if(isset($before)) {!! $before->toHtml() !!} @endif
 
@@ -30,6 +30,7 @@
 <script>
     (function() {
         drawRelationEditable('{{ $field_id }}', {
+            contentId: '_inplace-content:{{ $field_id }}',
             id: '{{ $id }}',
             model: '{{ $model }}',
             relationName: '{{ $relationName }}',
