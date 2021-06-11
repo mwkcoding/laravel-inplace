@@ -85,7 +85,7 @@ class Request extends Controller{
         }
 
         $this->column = Helper::decrypt(request('column'));
-        $this->saveUsing = request()->filled('saveusing') ? Helper::decrypt(request('saveusing')) : null;
+        $this->saveUsing = request()->filled('saveusing') ? unserialize(Helper::decrypt(request('saveusing'))) : null;
     }
 
     private function authorize() {
