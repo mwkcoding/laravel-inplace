@@ -5,6 +5,8 @@ namespace devsrv\inplace\Components;
 use Illuminate\View\Component;
 use Illuminate\Support\Facades\Crypt;
 use devsrv\inplace\Traits\{ ModelResolver, ConfigResolver };
+use devsrv\inplace\Fields\Text as TextField;
+use devsrv\inplace\Exceptions\InplaceException;
 
 class Text extends Component
 {
@@ -15,45 +17,47 @@ class Text extends Component
     public $column;
     public $value;
     public $renderAs;
-    public $saveusing;
+    public $saveUsing;
     public $validation;
-    public $authorize;
 
     public $csrf_token;
     public $save_route;
     public $icons;
 
-    public function __construct($model, $id = null, $column = null, $value = null, $renderAs = null, $authorize = null, $saveusing = null, $validation = 'required') {
+    public function __construct($model, $id = null, $column = null, $value = null, $renderAs = null, $saveUsing = null, $validation = 'required') {
+        $field = new TextField(
+            $model,
+            $id,
+            $column, 
+            $value,
+            $renderAs,
+            $saveUsing,
+            $validation
+        );
+
         if($id) {
             $this->id = Crypt::encryptString($id);
 
-            $this->resolveConfigUsingID($id, $model);
+            $optionsResolver = $field->resolveFromFieldMaker();
+            $config = $optionsResolver->getConfigs();
         }
         else {
-            $this->resolveConfigUsingAttributes($column, $renderAs, $authorize, $saveusing, $validation);
+            throw_if(is_null($column), InplaceException::missing('column name required'));
+
+            $optionsResolver = $field->resolveFromComponentAttribute();
+            $config = $optionsResolver->getConfigs();
         }
         
-        $this->model = Crypt::encryptString($this->resolveModel($model));
+        $this->model = Crypt::encryptString($config['model']);
         $this->value = $value;
+        $this->renderAs = $config['render_using'];
+        $this->column = Crypt::encryptString($config['column']);
+        $this->validation = $config['rules'] ? Crypt::encryptString(serialize($config['rules'])) : null;
+        $this->saveUsing = $config['save_using'] ? Crypt::encryptString($config['save_using']) : null;
 
         $this->csrf_token = csrf_token();
         $this->save_route = route('inplace.save');
-
         $this->icons = config('inplace.icons');
-    }
-
-    private function resolveConfigUsingID(string $id, $model) {
-        $inlineEditor = self::getConfig('inline', $id);
-
-        $this->renderAs = $inlineEditor->renderUsingComponent ?? 'inplace-inline-basic-common';
-    }
-
-    private function resolveConfigUsingAttributes($column, $renderAs, $authorize, $saveusing, $validation) {
-        $this->column = $column ? Crypt::encryptString($column) : null;
-        $this->validation = $validation;
-        $this->authorize = $authorize;
-        $this->saveusing = $saveusing ? Crypt::encryptString($saveusing) : null;
-        $this->renderAs = $renderAs ?? 'inplace-inline-basic-common';
     }
 
     /**
