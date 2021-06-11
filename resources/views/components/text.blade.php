@@ -7,14 +7,13 @@
 @php $value ??= $slot->toHtml(); @endphp
 
 <div class="inplace-container" x-cloak x-data="{
-    ...inlineEditable(), 
+    ...inlineTextEditable(), 
     editedContent: `{{ $value }}`, 
     content: `{{ $value }}`,
     id: '{{ $id }}',
-    authorize: '{{ $authorize === null ? null : ((bool) $authorize === true ? 1 : 0) }}',
     model: '{{ $model }}',
     column: '{{ $column }}',
-    saveusing: '{{ $saveusing }}',
+    saveusing: '{{ $saveUsing }}',
     rules: {!! str_replace('"', '\'', e(json_encode($validation))) !!}
 }" x-init="onBoot($watch)">
     <div class="inplace-editable">
@@ -85,10 +84,10 @@
 @once
 <script>
     window._inplace = Object.assign(window._inplace || {}, {
-        inline: { route: '{{ $save_route }}' },
+        text: { route: '{{ $save_route }}' },
         csrf_token: '{{ $csrf_token }}'
     });
 </script>
-<script src="{{ asset('vendor/inplace/resources/assets/js/inline/bundle.js') }}"></script>
+<script src="{{ asset('vendor/inplace/resources/assets/js/text/bundle.js') }}"></script>
 @endonce
 @endpush
