@@ -53,7 +53,7 @@ class Text extends Component
         $this->renderAs = $config['render_using'];
         $this->column = Crypt::encryptString($config['column']);
         $this->validation = $config['rules'] ? Crypt::encryptString(serialize($config['rules'])) : null;
-        $this->saveUsing = $config['save_using'] ? Crypt::encryptString($config['save_using']) : null;
+        $this->saveUsing = $config['save_using'] ? Crypt::encryptString(serialize($config['save_using'])) : null;
 
         $this->csrf_token = csrf_token();
         $this->save_route = route('inplace.save');
