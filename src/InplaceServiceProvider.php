@@ -17,7 +17,7 @@ class InplaceServiceProvider extends ServiceProvider
     {
         $this->app->singleton(InplaceConfig::class, function ($app) {
             $config = [
-                'inline' => class_exists('\App\Http\Inplace\Inline') ? \App\Http\Inplace\Inline::config() : null,
+                'text' => class_exists('\App\Http\Inplace\Text') ? \App\Http\Inplace\Text::config() : null,
                 'relation' => class_exists('\App\Http\Inplace\Relation') ? \App\Http\Inplace\Relation::config() : null
             ];
             return new InplaceConfig($config);

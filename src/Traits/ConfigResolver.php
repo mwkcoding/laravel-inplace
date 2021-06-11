@@ -1,7 +1,6 @@
 <?php
 
 namespace devsrv\inplace\Traits;
-use Illuminate\Database\Eloquent\Model;
 use devsrv\inplace\Exceptions\ConfigException;
 use devsrv\inplace\InplaceConfig;
 
@@ -16,7 +15,7 @@ trait ConfigResolver
         }
 
         $getter = [
-            'inline' => 'getInlineEditor',
+            'text' => 'getInlineTextEditor',
             'relation' => 'getRelationEditor'
         ];
 

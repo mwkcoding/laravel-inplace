@@ -1,7 +1,7 @@
 <?php
 
 namespace devsrv\inplace;
-use devsrv\inplace\{ RelationManager, InlineEdit };
+use devsrv\inplace\{ RelationManager, InlineText };
 
 class InplaceConfig {
     public static $config;
@@ -21,8 +21,8 @@ class InplaceConfig {
         });
     }
 
-    public static function getInlineEditor($id) {
-        return collect(self::$config['inline'])->first(function (InlineEdit $inlineEditor, $key) use($id) {
+    public static function getInlineTextEditor($id) {
+        return collect(self::$config['text'])->first(function (InlineText $inlineEditor, $key) use($id) {
             return $inlineEditor->id === $id;
         });
     }

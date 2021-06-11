@@ -2,15 +2,17 @@
 
 namespace devsrv\inplace;
 
-class InlineEdit {
+class InlineText {
     public $id;
     public $column;
     public $rules;
-    public $authorize = null;
+
+    public $bypassAuthorize = false;
+    public $authorizeUsing = null;
+
     public $middlewares = null;
-    public $applyMiddleware = true;
     public $renderUsingComponent = null;
-    public $saveUsingClass = null;
+    public $saveUsingInvokable = null;
 
     public function __construct($id)
     {
@@ -31,18 +33,18 @@ class InlineEdit {
         return $this;
     }
 
-    public function authorize($authorize) {
-        $this->authorize = $authorize;
+    public function authorizeUsing($callback) {
+        $this->authorizeUsing = $callback;
+        return $this;
+    }
+
+    public function bypassAuthorize() {
+        $this->bypassAuthorize = true;
         return $this;
     }
 
     public function middleware($middlewares) {
         $this->middlewares = $middlewares;
-        return $this;
-    }
-
-    public function withoutMiddleware() {
-        $this->applyMiddleware = false;
         return $this;
     }
 
@@ -52,7 +54,7 @@ class InlineEdit {
     }
 
     public function saveUsing($class) {
-        $this->saveUsingClass = $class;
+        $this->saveUsingInvokable = $class;
         return $this;
     }
 }

@@ -48,7 +48,7 @@ class Text implements Assemble {
 
     public function resolveFromFieldMaker() 
     {
-        $inlineText = self::getConfig('inline', $this->id);
+        $inlineText = self::getConfig('text', $this->id);
         
         $this->modelFormatted = $this->resolveModel($this->model);
         $this->column = $inlineText->column;
