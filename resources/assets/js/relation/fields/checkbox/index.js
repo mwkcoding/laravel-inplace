@@ -1,15 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-export default function BasicCheckbox(props) {
-    const { options, thumbnailed, thumbnailWidth, currentValues, multiple, onSave } = props;
+function BasicCheckbox(props) {
+    const { options, thumbnailed, thumbnailWidth, currentValues, multiple, onSave, hasError } = props;
 
-    const [selected, setSelected] = useState(() => {
+    const resetSelection = () => {
         if(! multiple && currentValues.length > 1) {
             return currentValues.slice(0, 1);
         }
 
         return currentValues;
-    });
+    }
+
+    const [selected, setSelected] = useState(() => resetSelection());
+
+    useEffect(() => {
+        if(hasError) 
+        setSelected(resetSelection());
+    }, [hasError])
 
     const handleChange = (e) => {
         const value = Number(e.target.value);
@@ -67,3 +74,5 @@ export default function BasicCheckbox(props) {
         </div>
     )
 }
+
+export default React.memo(BasicCheckbox);

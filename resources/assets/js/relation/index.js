@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom'
 import BasicCheckbox from './fields/checkbox';
 
@@ -33,7 +33,7 @@ export default function RelationEditor(props) {
         setSuccess(false);
     }
 
-    const handleSave = (values) => {
+    const handleSave = useCallback((values) => {
         resetFormStates();
 
         window.dispatchEvent(new CustomEvent("inplace-editable-progress", {
@@ -103,7 +103,8 @@ export default function RelationEditor(props) {
                 detail: { stop: true }
             }));
         });
-    }
+
+    }, []);
 
     const fieldOptions = {...Object.keys(props).filter(key => ! skipPropsPass.includes(key))
         .reduce((obj, key) => {
@@ -114,7 +115,7 @@ export default function RelationEditor(props) {
 
     return (
         <div>
-            <BasicCheckbox {...fieldOptions} onSave={handleSave}  />
+            <BasicCheckbox {...fieldOptions} onSave={handleSave} hasError={error.has} />
 
             <div className="message">
                 {! saving ?
