@@ -3,7 +3,7 @@ import lottieWeb from 'lottie-web';
 import lottieCheck from './../../lottie/check-okey-done.json';
 import lottieError from './../../lottie/error-cross.json';
 
-window.inlineEditable = function () {
+window.inlineTextEditable = function () {
     return {
         editing: false,
         saving: false,
@@ -89,7 +89,7 @@ window.inlineEditable = function () {
             this.validationErrors = [];
             this.saving = true;
 
-            fetch(window._inplace.inline.route, {
+            fetch(window._inplace.text.route, {
                 headers: {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
@@ -101,7 +101,6 @@ window.inlineEditable = function () {
                 body: JSON.stringify({
                     id: this.id,
                     content: this.editedContent,
-                    authorize: this.authorize,
                     model: this.model,
                     column: this.column,
                     rules: this.rules,
