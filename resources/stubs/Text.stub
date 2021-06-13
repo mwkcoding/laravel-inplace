@@ -12,16 +12,15 @@ class Text
             /*InlineText::make('USERNAME')
             ->column('name')
             ->validation(['required', 'min:10'])
-            ->authorize(true),*/
+            ->authorizeUsing(fn() => ! auth()->check()),*/
 
             /*InlineText::make('USERNAME2')
             ->column('name')
             ->validation(['required', 'min:10'])
-            ->authorize(true)
-            ->middleware(['auth'])
-            ->withoutMiddleware()
+            ->middleware(['foo'])
+            ->bypassAuthorize()
             ->renderComponent('CustomInlineRender')
-            ->saveUsing(\App\Http\Inplace\CustomSave::class),*/
+            ->saveUsing(new CustomSave),*/
         ];
     }
 }
