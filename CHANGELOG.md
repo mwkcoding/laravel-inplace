@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.0.0 - 2021-06-13
+
+#### Added
+    - new methods to customize authorization behavioir for text component - `authorizeUsing`, `bypassAuthorize` 
+    - relation component memoization for options list
+    - relation component do not re-query options if relation already eager loaded
+    - if data save error then relation options selection revert back
+    - relation component replace current values markup after successful data save
+
+#### Removed
+    - global authorize config removed. if using blade component attribute to pass all configs then authorization will always be enforced
+    - `authorize` `withoutMiddleware` config methods removed from text component 
+    - `authorize` attribute no longer supported for text component
+
+#### Changed
+    - `x-inplace-inline` to `x-inplace-text`
+    - `saveusing` renammed to `save-using`
+    - custom save-as class support invokable object
+
 ## 1.3.1 - 2021-04-25
 
 - edit control button appear on content hover
