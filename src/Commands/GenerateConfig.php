@@ -33,7 +33,7 @@ class GenerateConfig extends Command
     }
 
     private function validateType() {
-        $supports = ['all', 'relation', 'inline'];
+        $supports = ['all', 'relation', 'text'];
 
         $type = $this->argument('type');
 
@@ -47,10 +47,10 @@ class GenerateConfig extends Command
 
     private function createConfigFile($type) {
         $path = [
-            'inline' => [
-                'target_file' => app_path('Http/Inplace/Inline.php'),
-                'target_file_path' => 'App/Http/Inplace/Inline.php',
-                'stub' => File::get(__DIR__ . '/../../resources/stubs/Inline.stub')
+            'text' => [
+                'target_file' => app_path('Http/Inplace/Text.php'),
+                'target_file_path' => 'App/Http/Inplace/Text.php',
+                'stub' => File::get(__DIR__ . '/../../resources/stubs/Text.stub')
             ],
             'relation' => [
                 'target_file' => app_path('Http/Inplace/Relation.php'),
@@ -91,7 +91,7 @@ class GenerateConfig extends Command
 
 
         if($type === 'all') {
-            $this->createConfigFile('inline');
+            $this->createConfigFile('text');
             $this->createConfigFile('relation');
 
             return;
