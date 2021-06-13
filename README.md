@@ -46,18 +46,8 @@ php artisan vendor:publish --provider="devsrv\inplace\InplaceServiceProvider" --
 ```shell
 php artisan vendor:publish --provider="devsrv\inplace\InplaceServiceProvider" --tag=config
 ```
-#### ✔️ authorize : 
-setting this `true` will enforce laravel's policy authorization for all the inplace edit components, though you can override the global behaviour by passing an `authorize` (bool) attribute to your inplace component
-
-```php
-<x-inplace-inline
-   model="App\Models\User,1"
-   column="email"
-   :authorize="false"	// override global authorization config
->
-  Content to edit
-</x-inplace-inline>
-```
+#### ✔️ icons :
+svg content for `edit` `save` and `cancel` button icon
 
 #### ✔️ middleware : 
 add as many middlewares you with in the `middleware` array e.g.: `['auth', 'admin']`
@@ -71,54 +61,53 @@ add as many middlewares you with in the `middleware` array e.g.: `['auth', 'admi
 **Example 1** | simplest usage
 
 ```php
-<x-inplace-inline
+<x-inplace-text
   model="App\Models\User:name,1"		// (REQUIRED) format: App\ModelNamespace\Model:id
   :model="\App\Models\User::find(1)" 	// Alternatively you can pass model instance
   column="name"							// (OPTIONAL) name of the table column to update
   validation="required|min:10"			// (OPTIONAL) pass validation rules
 >
   {{ \App\Models\User::find(1)->name }}
-</x-inplace-inline>
+</x-inplace-text>
 ```
 
 **Example 2** | Slotted Markup
-[check here](https://github.com/devsrv/laravel-inplace-example/blob/948eaa14521284ba719e7242a247996ff221f434/resources/views/welcome.blade.php#L54)
 
 ```php
-<x-inplace-inline
-	model="App\Models\User:1"
+<x-inplace-text
+	:model="$user"
     ...
 >
    <x-slot name="before"><div class="myclass anotherclass"><h2></x-slot>	// custom markup prepend
    <x-slot name="after"></h2></div></x-slot>								// custom markup append
 
-    {{ \App\Models\User::find(1)->email }}
-</x-inplace-inline>
+    {{ $user->email }}
+</x-inplace-text>
 ```
 
 **Example - 3** | Pass Custom Class to save content
-[check here](https://github.com/devsrv/laravel-inplace-example/blob/948eaa14521284ba719e7242a247996ff221f434/resources/views/welcome.blade.php#L69)
+[check here](https://github.com/devsrv/laravel-inplace-example/blob/c81c21d76c888958964b1eb1a589ea524694f8e9/resources/views/welcome.blade.php#L40)
 
-> the custom save class must consist a `public save` method which receives `$model, $column, $value` and it should return an array with key `success` (bool) and `message` (string)
+> the custom save class must be a invokable object (class with __invoke method) which receives `$model, $column, $value` and it should return an array with key `success` (bool) and `message` (string)
 
 
-_Example Custom Save class :_ refer to this [CustomSave](https://github.com/devsrv/laravel-inplace-example/blob/master/app/Http/Inplace/CustomSave.php) full example
+_Example Custom Save class :_ refer to this [CustomSave](https://github.com/devsrv/laravel-inplace-example/blob/master/app/Http/Inplace/Requests/CustomSave.php) full example
 
 **Example - 4** | Render content as custom component
 
 ```php
-<x-inplace-inline
+<x-inplace-text
   model="..."
   render-as="CustomInlineRender"		// pass your own blade component which takes care of how content gets rendered
 >
   ...
-</x-inplace-inline>
+</x-inplace-text>
 ```
 
 > make sure to pass `{{ $attributes }}` to the html elenent that is wrapping the target content
 > e.g.: `<h1 class="your-class" {{ $attributes }}></h1>`
 
-refer to this example [component class](https://github.com/devsrv/laravel-inplace-example/blob/master/app/View/Components/CustomInlineRender.php) & [component view](https://github.com/devsrv/laravel-inplace-example/blob/master/resources/views/components/custom-inline-render.blade.php)
+refer to this example [component](https://github.com/devsrv/laravel-inplace-example/blob/master/resources/views/components/custom-inline-render.blade.php)
 
 **Example - 5** | Complex Validation Rules
 
@@ -127,38 +116,45 @@ refer to this example [component class](https://github.com/devsrv/laravel-inplac
 $rules = serialize(['required', \Illuminate\Validation\Rule::in(['11', '12']), 'min:2']);  // make sure to serialize
 @endphp
 
-<x-inplace-inline
+<x-inplace-text
 model="App\Models\User:1"
 column="name"
 :validation="$rules"                   // complex validation can be passed by `serialize`
 >
   {{ \App\Models\User::find(1)->name }}
-</x-inplace-inline>
+</x-inplace-text>
 ```
-refer [this example](https://github.com/devsrv/laravel-inplace-example/blob/3057161a1af84a2f9a9c215157f0e28c9edcb1c4/resources/views/welcome.blade.php#L33)
+refer [this example](https://github.com/devsrv/laravel-inplace-example/blob/c81c21d76c888958964b1eb1a589ea524694f8e9/resources/views/welcome.blade.php#L57)
+
+#### 📌 Note: 
+if using direct inplace blade component to pass all the configs, authorization will be enforced always. to override/customize this behaviour consider using [field maker](https://github.com/devsrv/laravel-inplace#advanced) configurator.
+
 
 ### 👾ADVANCED
 instead passing config via attributes you can use the advanced field configurator file where you have access to fluent config setter methods, also this approach lets you reuse same config for multiple edits and more fine grained options to configure
 
 ```shell
-php artisan inplace:config {all | inline | relation}
+php artisan inplace:config {all | text | relation}
 ```
-this command will create `App\Http\Inplace\Inline.php` and `App\Http\Inplace\Inline.php` or just one of them depending on your input
+this command will create `App\Http\Inplace\Text.php` and `App\Http\Inplace\Relation.php` or just one of them depending on your input
 
 in the `config` method of the class add multiple configs as array 
-> for inline field: using `devsrv\inplace\InlineEdit` class and 
+> for inline field: using `devsrv\inplace\InlineText` class and 
 > 
 > for relation field: using `devsrv\inplace\RelationManager` class
 
 then you can simply use the component as:
 ```php
-<x-inplace-inline
+<x-inplace-text
 	id="USERNAME"							// the should match id of field config
 	:model="\App\Models\User::find(1)"		// however model still needs to be passed via attribute (always required)
 >
 ```
 
-refer to [this file](https://github.com/devsrv/laravel-inplace-example/blob/master/app/Http/Inplace/Inline.php) for example
+refer to [this file](https://github.com/devsrv/laravel-inplace-example/blob/master/app/Http/Inplace/Text.php) for example
+
+> Field configurator supports some extra methods like: 
+`authorizeUsing( closure )`, `bypassAuthorize()`, `middleware(['foo', 'bar'])` etc.
 
 **_detailed documentation comming soon_ . . .**
 
@@ -173,7 +169,10 @@ when passing custom class to save data you may choose to authorize the action fr
 
 > donn't forget to use the `Illuminate\Foundation\Auth\Access\AuthorizesRequests` trait.
 
-referer this [example](https://github.com/devsrv/laravel-inplace-example/blob/9f6961485e8c6488e6ffa56c9ebb4e45686937ce/app/Http/Inplace/CustomSave.php#L20) 2. **if you use the popular [SPATIE PERMISSION](https://github.com/spatie/laravel-permission) package:** you may choose to use `authorizeSpatieRoleOrPermission` method that comes with the package as a support when you use the `devsrv\inplace\Traits\SpatieAuthorize` trait.
+referer this [example](https://github.com/devsrv/laravel-inplace-example/blob/master/app/Http/Inplace/Requests/CustomSave.php) 
+
+#### 2. if you use the popular [SPATIE PERMISSION](https://github.com/spatie/laravel-permission) package: 
+you may choose to use `authorizeSpatieRoleOrPermission` method that comes with the package as a support when you use the `devsrv\inplace\Traits\SpatieAuthorize` trait.
 
 ```php
 use devsrv\inplace\Traits\SpatieAuthorize;
@@ -182,7 +181,7 @@ class CustomSave
 {
     use SpatieAuthorize;
 
-    public function save($model, $column, $value)
+    public function __invoke($model, $column, $value)
     {
     	$this->authorizeSpatieRoleOrPermission(['admin', 'some permission']);
 
@@ -196,7 +195,7 @@ class CustomSave
 }
 ```
 
-refer this [example](https://github.com/devsrv/laravel-inplace-example/blob/9f6961485e8c6488e6ffa56c9ebb4e45686937ce/app/Http/Inplace/CustomSave.php#L30)
+refer this [example](https://github.com/devsrv/laravel-inplace-example/blob/c81c21d76c888958964b1eb1a589ea524694f8e9/app/Http/Inplace/Requests/CustomSave.php#L32)
 
 #### 2. 🔥 Listen events
 1. `inplace-editable-progress` custom `window` browser event diaptched after ajax start & ajax finished. refer to [example](https://github.com/devsrv/laravel-inplace-example/blob/3057161a1af84a2f9a9c215157f0e28c9edcb1c4/resources/views/app.blade.php#L58) for [NProgress](https://github.com/rstacruz/nprogress) Implementation
