@@ -5,14 +5,18 @@ import Controls from './../controls';
 
 export default function Main({payload}) {
     const [editing, setEditing] = useState(false);
+    const [save, setSave] = useState(false);
 
-    const handleToggleEdit = (status) => setEditing(status);
+    const handleToggleEdit = useCallback((status) => setEditing(status), []);
+    
+    const handleSave = useCallback(() => setSave(true), []);
+    const handleSaveFinished = useCallback(() => setSave(false), []);
 
     return (
         <div>
-            <Controls editing={editing} onEditToggle={handleToggleEdit} />
+            <Controls editing={editing} onEditToggle={handleToggleEdit} onSave={handleSave} />
 
-            { editing && <Relation {...payload} /> }
+            { editing && <Relation {...payload} save={save} onSaveFinished={handleSaveFinished} /> }
         </div>
     );
 }

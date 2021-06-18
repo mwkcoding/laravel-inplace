@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 function BasicCheckbox(props) {
-    const { hash, thumbnailed, thumbnailWidth, currentValues, multiple, onSave, hasError } = props;
+    const { hash, thumbnailed, thumbnailWidth, currentValues, onInputChange, multiple, hasError } = props;
 
     const optionsBank = window._inplace.options.relation.find(opt => opt.id === hash);
     const options = optionsBank ? optionsBank.options : [];
@@ -15,11 +15,20 @@ function BasicCheckbox(props) {
     }
 
     const [selected, setSelected] = useState(() => resetSelection());
+    const prevSelected = useRef();
+
+    useEffect(() => {
+        prevSelected.current = selected;
+    });
 
     useEffect(() => {
         if(hasError) 
         setSelected(resetSelection());
-    }, [hasError])
+    }, [hasError]);
+
+    useEffect(() => {
+        if(prevSelected.current !== selected) onInputChange(selected);
+    }, [selected]);
 
     const handleChange = (e) => {
         const value = Number(e.target.value);
@@ -54,10 +63,6 @@ function BasicCheckbox(props) {
         );
     }
 
-    const handleSave = () => {
-        onSave(selected);
-    }
-
     return (
         <div>
             <ul>
@@ -72,8 +77,6 @@ function BasicCheckbox(props) {
                 </li>)
             )}
             </ul>
-
-            <button type="button" onClick={handleSave} className="btn">save</button>
         </div>
     )
 }

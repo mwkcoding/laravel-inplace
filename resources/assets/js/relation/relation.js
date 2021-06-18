@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import BasicCheckbox from './fields/checkbox';
 
 export default function Relation(props) {
@@ -7,11 +7,22 @@ export default function Relation(props) {
     const [error, setError] = useState({has: false, type: '', message: ''});
     const [success, setSuccess] = useState(false);
     const [validationErrors, setValidationErrors] = useState([]);
+    const [input, setInput] = useState(null);
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         if(success) dispatchSuccessEvent();
     }, [success]);
+    
+    useEffect(() => {
+        if(props.save) {
+            handleSave();
+
+            props.onSaveFinished();
+
+            return;
+        }
+    }, [props.save]);
 
     const dispatchSuccessEvent = () => {
         window.dispatchEvent(new CustomEvent("inplace-editable-finish", {
@@ -32,7 +43,9 @@ export default function Relation(props) {
         setSuccess(false);
     }
 
-    const handleSave = useCallback((values) => {
+    const handleInputChange = useCallback((value) => setInput(value), []);
+
+    const handleSave = () => {
         resetFormStates();
 
         window.dispatchEvent(new CustomEvent("inplace-editable-progress", {
@@ -49,7 +62,7 @@ export default function Relation(props) {
             method: 'POST',
             credentials: "same-origin",
             body: JSON.stringify({
-                values: values,
+                values: input,
                 id: props.id,
                 model: props.model,
                 rules: props.rules,
@@ -106,7 +119,7 @@ export default function Relation(props) {
             }));
         });
 
-    }, []);
+    }
 
     const fieldOptions = {...Object.keys(props).filter(key => ! skipPropsPass.includes(key))
         .reduce((obj, key) => {
@@ -117,7 +130,7 @@ export default function Relation(props) {
 
     return (
         <div>
-            <BasicCheckbox {...fieldOptions} onSave={handleSave} hasError={error.has} />
+            <BasicCheckbox {...fieldOptions} onInputChange={handleInputChange} hasError={error.has} />
 
             <div className="message">
                 {! saving ?
