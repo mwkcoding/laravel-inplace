@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import ReactDOM from 'react-dom'
 import BasicCheckbox from './fields/checkbox';
 
 export default function RelationEditor(props) {
@@ -134,22 +133,5 @@ export default function RelationEditor(props) {
                 }
             </div>
         </div>
-    );
-}
-
-window.eraseRelationEditable = function(id) {
-    ReactDOM.unmountComponentAtNode(document.getElementById(id)); 
-}
-
-window.drawRelationEditable = function(node) {
-    const payload = JSON.parse(node.dataset.inplaceFieldConf);
-
-    const optionsBank = window._inplace.options.relation.find(opt => opt.id === payload.hash);
-
-    const options = optionsBank ? optionsBank.options : [];
-
-    ReactDOM.render(
-        <RelationEditor {...payload} options={options} />,
-        document.getElementById(payload.fieldId)
     );
 }
