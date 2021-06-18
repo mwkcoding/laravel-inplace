@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
 function BasicCheckbox(props) {
-    const { options, thumbnailed, thumbnailWidth, currentValues, multiple, onSave, hasError } = props;
+    const { hash, thumbnailed, thumbnailWidth, currentValues, multiple, onSave, hasError } = props;
+
+    const optionsBank = window._inplace.options.relation.find(opt => opt.id === hash);
+    const options = optionsBank ? optionsBank.options : [];
 
     const resetSelection = () => {
         if(! multiple && currentValues.length > 1) {
