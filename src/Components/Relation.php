@@ -29,6 +29,8 @@ class Relation extends ViewComponent
     public $save_route;
     public $field_id;
 
+    public $hash = null;
+
     /**
      * Create a new component instance.
      *
@@ -70,7 +72,9 @@ class Relation extends ViewComponent
             $this->validateEach = $config['eachRules'] ? Crypt::encryptString(serialize($config['eachRules'])) : null;
         }
 
-        $this->field_id = 'relation:'.bin2hex(random_bytes(16));
+        $rand = bin2hex(random_bytes(16));
+        $this->field_id = 'relation:'. $rand;
+        $this->hash = $id ? md5($id) : md5($rand);
         $this->csrf_token = csrf_token();
         $this->save_route = route('inplace.relation.save');
         $this->model = Crypt::encryptString($config['model']);
