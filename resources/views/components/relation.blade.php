@@ -9,10 +9,7 @@
     <div class="d-flex justify-content-between">
         <div id="_inplace-content:{{ $field_id }}">{!! $renderValue !!}</div>
 
-            <div>
-                <button 
-            type="button" 
-            onclick="drawRelationEditable(this)"
+            <div class="_inplace-field-control"
             data-inplace-field-conf='{
                 "fieldId" : "{{ $field_id }}",
                 "contentId": "_inplace-content:{{ $field_id }}",
@@ -22,16 +19,14 @@
                 "relationName": "{{ $relationName }}",
                 "relColumn": "{{ $relationColumn }}",
                 "renderTemplate": "{{ $renderTemplate }}",
+                "renderField": "relation.BasicCheckbox",
                 "rules": "{{ $validation }}",
                 "eachRules": "{{ $validateEach }}",
                 "thumbnailed": "{{ (bool) $thumbnailed }}",
                 "thumbnailWidth": "{{ $thumbnailWidth }}",
                 "currentValues": @json($currentValues),
                 "multiple": "{{ (bool) $multiple }}"
-            }'
-        >edit</button>
-
-                <button type="button" onclick="eraseRelationEditable('{{ $field_id }}')">cancel</button>
+            }'>
         </div>
     </div>
 
@@ -52,7 +47,7 @@
         options: {relation: []}
     });
 </script>
-<script src="{{ asset('vendor/inplace/resources/assets/js/relation/bundle.js') }}"></script>
+<script src="{{ asset('vendor/inplace/resources/assets/js/draw/bundle.js') }}"></script>
 @endonce
 
 <script>
