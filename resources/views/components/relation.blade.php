@@ -47,7 +47,7 @@
         options: {relation: []}
     });
 </script>
-<script src="{{ asset('vendor/inplace/resources/assets/js/draw/bundle.js') }}"></script>
+<script src="{{ asset('vendor/inplace/resources/assets/js/relation/bundle.js') }}"></script>
 @endonce
 
 <script>
