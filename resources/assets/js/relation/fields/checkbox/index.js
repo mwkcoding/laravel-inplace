@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function BasicCheckbox(props) {
     const { hash, thumbnailed, thumbnailWidth, currentValues, onInputChange, multiple, hasError } = props;
@@ -15,11 +15,6 @@ function BasicCheckbox(props) {
     }
 
     const [selected, setSelected] = useState(() => resetSelection());
-    const prevSelected = useRef();
-
-    useEffect(() => {
-        prevSelected.current = selected;
-    });
 
     useEffect(() => {
         if(hasError) 
@@ -27,7 +22,7 @@ function BasicCheckbox(props) {
     }, [hasError]);
 
     useEffect(() => {
-        if(prevSelected.current !== selected) onInputChange(selected);
+        onInputChange(selected);
     }, [selected]);
 
     const handleChange = (e) => {
