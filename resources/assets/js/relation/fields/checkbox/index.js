@@ -1,46 +1,53 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useRecoilState } from 'recoil';
+import { fieldValuesState } from './../../recoil/atom/editorStates';
 
 function BasicCheckbox(props) {
-    const { hash, thumbnailed, thumbnailWidth, currentValues, onInputChange, multiple, hasError } = props;
+    const { hash, thumbnailed, thumbnailWidth, multiple, hasError } = props;
 
     const optionsBank = window._inplace.options.relation.find(opt => opt.id === hash);
     const options = optionsBank ? optionsBank.options : [];
 
+    const [{last, current}, setFieldValues] = useRecoilState(fieldValuesState);
+
+    const firstMounded = useRef(true);
+
     const resetSelection = () => {
-        if(! multiple && currentValues.length > 1) {
-            return currentValues.slice(0, 1);
+        if(! multiple && last.length > 1) {
+            return last.slice(0, 1);
         }
 
-        return currentValues;
+        return last;
     }
 
-    const [selected, setSelected] = useState(() => resetSelection());
+    useEffect(() => {
+        if (firstMounded.current) {
+            setFieldValues((prevValues) => ({...prevValues, current: resetSelection()}));
+        }
+        firstMounded.current = false;
+    }, [])
 
     useEffect(() => {
-        if(hasError) 
-        setSelected(resetSelection());
+        if(hasError)
+        setFieldValues((prevValues) => ({...prevValues, current: resetSelection()})); 
     }, [hasError]);
-
-    useEffect(() => {
-        onInputChange(selected);
-    }, [selected]);
 
     const handleChange = (e) => {
         const value = Number(e.target.value);
 
         if(! multiple) {
-            if(selected.includes(value)) {
-                setSelected([]);
+            if(current.includes(value)) {
+                setFieldValues((prevValues) => ({...prevValues, current: []}));
             } else {
-                setSelected([value]);
+                setFieldValues((prevValues) => ({...prevValues, current: [value]}));
             }
 
             return;
         }
 
         if(e.target.checked) {
-            if(! selected.includes(value)) {
-                setSelected(prevIds => [...prevIds, value]);
+            if(! current.includes(value)) {
+                setFieldValues((prevValues) => ({...prevValues, current: [...prevValues.current, value]}));
 
                 return;
             }
@@ -48,14 +55,12 @@ function BasicCheckbox(props) {
             return;
         }
 
-        const optionIndex = selected.findIndex(id => id === value);
+        const optionIndex = current.findIndex(id => id === value);
 
-        setSelected(
-            prevIds => [
-                ...prevIds.slice(0, optionIndex), 
-                ...prevIds.slice(optionIndex + 1)
-            ]
-        );
+        setFieldValues((prevValues) => ({...prevValues, current: [
+            ...prevValues.current.slice(0, optionIndex), 
+            ...prevValues.current.slice(optionIndex + 1)
+        ]}));
     }
 
     return (
@@ -67,7 +72,7 @@ function BasicCheckbox(props) {
                         <img src={opt.thumbnail} width={thumbnailWidth} alt="avatar" />
                     }
 
-                    <input type="checkbox" value={opt.value} onChange={handleChange} checked={selected.includes(opt.value)} />
+                    <input type="checkbox" value={opt.value} onChange={handleChange} checked={current.includes(opt.value)} />
                     <label>{opt.label}</label>
                 </li>)
             )}

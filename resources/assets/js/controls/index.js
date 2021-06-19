@@ -1,14 +1,18 @@
 import React from 'react';
+import { useRecoilState } from 'recoil';
+import { fieldControlState } from './atom/fieldControlState';
 
-function Controls({editing, onEditToggle, onSave}) {
+function Controls() {
+    const [control, setControl] = useRecoilState(fieldControlState);
+
     return (
-        editing ? 
+        control.editing ? 
         <>
-        <button type="button" onClick={onSave}>save</button>
-        <button type="button" onClick={() => onEditToggle(false)}>calcel</button>
+        <button type="button" onClick={ () => setControl((prevState) => ({...prevState, save: true }) ) }>save</button>
+        <button type="button" onClick={ () => setControl( {save: false, editing: false} ) }>calcel</button>
         </>
         :
-        <button type="button" onClick={() => onEditToggle(true)}>edit</button>
+        <button type="button" onClick={ () => setControl((prevState) => ({...prevState, editing: true }) ) }>edit</button>
     )
 }
 

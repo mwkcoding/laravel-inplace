@@ -1,22 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
+import { RecoilRoot, useRecoilState, useRecoilValue } from 'recoil';
+import RecoilDempState from './../debug/RecoilDumpState';
+import { fieldControlState } from './../controls/atom/fieldControlState';
+import { fieldValuesState } from './recoil/atom/editorStates';
+
 import Relation from './relation';
 import Controls from './../controls';
 
 export default function Main({payload}) {
-    const [editing, setEditing] = useState(false);
-    const [save, setSave] = useState(false);
-
-    const handleToggleEdit = useCallback((status) => setEditing(status), []);
-    
-    const handleSave = useCallback(() => setSave(true), []);
-    const handleSaveFinished = useCallback(() => setSave(false), []);
+    const control = useRecoilValue(fieldControlState);
 
     return (
         <div>
-            <Controls editing={editing} onEditToggle={handleToggleEdit} onSave={handleSave} />
+            <Controls />
 
-            { editing && <Relation {...payload} save={save} onSaveFinished={handleSaveFinished} /> }
+            {/* <RecoilDempState atom={fieldValuesState} /> */}
+
+            { control.editing && <Relation {...payload} /> }
         </div>
     );
 }
@@ -24,5 +25,9 @@ export default function Main({payload}) {
 document.querySelectorAll('._inplace-field-control').forEach(function(node) {
     const payload = JSON.parse(node.dataset.inplaceFieldConf);
 
-    ReactDOM.render(<Main payload={payload} />, node);
+    ReactDOM.render(
+        <RecoilRoot>
+            <Main payload={payload} />
+        </RecoilRoot>, node
+    );
 });
