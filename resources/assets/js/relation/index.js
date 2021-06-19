@@ -10,10 +10,21 @@ import Controls from './../controls';
 
 export default function Main({payload}) {
     const control = useRecoilValue(fieldControlState);
+    const {last, current} = useRecoilValue(fieldValuesState);
+
+    const allowSave = (f, s) => {
+        if (f.length !== s.length) return true;
+    
+        s.forEach(i => {
+            if(! f.includes(i)) return true;
+        });
+
+        return false;
+    }
 
     return (
         <div>
-            <Controls />
+            <Controls showSave={allowSave(last, current)} />
 
             {/* <RecoilDempState atom={fieldValuesState} /> */}
 
