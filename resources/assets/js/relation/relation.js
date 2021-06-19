@@ -2,12 +2,13 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import BasicCheckbox from './fields/checkbox';
 
 export default function Relation(props) {
-    const skipPropsPass = ['model', 'relationName', 'relColumn', 'renderTemplate', 'fieldId'];
+    const skipPropsPass = ['model', 'relationName', 'relColumn', 'renderTemplate', 'fieldId', 'currentValues'];
 
     const [error, setError] = useState({has: false, type: '', message: ''});
     const [success, setSuccess] = useState(false);
     const [validationErrors, setValidationErrors] = useState([]);
     const [input, setInput] = useState(null);
+    const [previousValues, setPreviousValues] = useState(props.currentValues);
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -83,6 +84,8 @@ export default function Relation(props) {
             if(Object.prototype.hasOwnProperty.call(result, 'success') && Number(result.success) === 1) {
                 setSuccess(true);
 
+                setPreviousValues(input);
+
                 if(Object.prototype.hasOwnProperty.call(result, 'redner') && result.redner)
                 document.getElementById(props.contentId).innerHTML = result.redner;
                 
@@ -130,7 +133,7 @@ export default function Relation(props) {
 
     return (
         <div>
-            <BasicCheckbox {...fieldOptions} onInputChange={handleInputChange} hasError={error.has} />
+            <BasicCheckbox {...fieldOptions} currentValues={previousValues} onInputChange={handleInputChange} hasError={error.has} />
 
             <div className="message">
                 {! saving ?
