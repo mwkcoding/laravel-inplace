@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { fieldControlState } from './../controls/atom/fieldControlState';
 import { fieldValuesState } from './recoil/atom/editorStates';
+import { resetCurrentFieldValues } from './recoil/selector/fieldValues';
 import BasicCheckbox from './fields/checkbox';
 
 export default function Relation(props) {
@@ -14,6 +15,7 @@ export default function Relation(props) {
 
     const [control, setControl] = useRecoilState(fieldControlState);
     const [fieldValues, setFieldValues] = useRecoilState(fieldValuesState);
+    const resetFieldValue = useRecoilValue(resetCurrentFieldValues(props.multiple));
 
     const firstMounded = useRef(true);
 
@@ -39,6 +41,11 @@ export default function Relation(props) {
         }
     }, [control.save]);
 
+    useEffect(() => {
+        if(error.has)
+        setFieldValues((prevValues) => ({...prevValues, current: resetFieldValue })); 
+    }, [error.has]);
+    
     const dispatchSuccessEvent = () => {
         window.dispatchEvent(new CustomEvent("inplace-editable-finish", {
             detail: { success: true }
@@ -148,7 +155,7 @@ export default function Relation(props) {
 
     return (
         <div>
-            <BasicCheckbox {...fieldOptions} hasError={error.has} />
+            <BasicCheckbox {...fieldOptions} />
 
             <div className="message">
                 {! saving ?

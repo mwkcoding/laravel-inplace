@@ -1,36 +1,25 @@
 import React, { useEffect, useRef } from 'react';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { fieldValuesState } from './../../recoil/atom/editorStates';
+import { resetCurrentFieldValues } from './../../recoil/selector/fieldValues';
 
 function BasicCheckbox(props) {
-    const { hash, thumbnailed, thumbnailWidth, multiple, hasError } = props;
+    const { hash, thumbnailed, thumbnailWidth, multiple } = props;
 
     const optionsBank = window._inplace.options.relation.find(opt => opt.id === hash);
     const options = optionsBank ? optionsBank.options : [];
 
     const [{last, current}, setFieldValues] = useRecoilState(fieldValuesState);
+    const resetFieldValue = useRecoilValue(resetCurrentFieldValues(multiple));
 
     const firstMounded = useRef(true);
 
-    const resetSelection = () => {
-        if(! multiple && last.length > 1) {
-            return last.slice(0, 1);
-        }
-
-        return last;
-    }
-
     useEffect(() => {
         if (firstMounded.current) {
-            setFieldValues((prevValues) => ({...prevValues, current: resetSelection()}));
+            setFieldValues((prevValues) => ({...prevValues, current: resetFieldValue }));
         }
         firstMounded.current = false;
     }, [])
-
-    useEffect(() => {
-        if(hasError)
-        setFieldValues((prevValues) => ({...prevValues, current: resetSelection()})); 
-    }, [hasError]);
 
     const handleChange = (e) => {
         const value = Number(e.target.value);
