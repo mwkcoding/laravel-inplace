@@ -19,10 +19,10 @@
             "renderField": "relation.BasicCheckbox",
             "rules": "{{ $validation }}",
             "eachRules": "{{ $validateEach }}",
-            "thumbnailed": "{{ (bool) $thumbnailed }}",
+            "thumbnailed": {{ (bool) $thumbnailed ? 'true' : 'false' }},
             "thumbnailWidth": "{{ $thumbnailWidth }}",
             "currentValues": @json($currentValues),
-            "multiple": "{{ (bool) $multiple }}"
+            "multiple": {{ (bool) $multiple ? 'true' : 'false' }}
         }'>
             {!! $renderValue !!}
         </div>
