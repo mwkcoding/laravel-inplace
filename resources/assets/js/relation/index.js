@@ -4,9 +4,15 @@ import { RecoilRoot, useRecoilValue } from 'recoil';
 import RecoilDempState from './../debug/RecoilDumpState';
 import { fieldControlState } from './../controls/atom/fieldControlState';
 import { fieldValuesState } from './recoil/atom/editorStates';
+import styled from 'styled-components';
 
 import Relation from './relation';
 import Controls from './../controls';
+
+const Content = styled.div`
+display: flex;
+justify-content: space-between;
+`;
 
 export default function Main({config, content}) {
     const control = useRecoilValue(fieldControlState);
@@ -26,12 +32,12 @@ export default function Main({config, content}) {
 
     return (
         <div>
-            <div className="d-flex justify-content-between">
+            <Content>
                 <div id={config.contentId} dangerouslySetInnerHTML={{__html: content}}></div>
                 <div>
                     <Controls showSave={allowSave(last, current)} />
                 </div>
-            </div>
+            </Content>
 
             { control.editing && <Relation {...config} /> }
 
