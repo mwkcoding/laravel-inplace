@@ -14,12 +14,14 @@ export default function Main({config, content}) {
 
     const allowSave = (f, s) => {
         if (f.length !== s.length) return true;
-    
+
+        let missing = false;
+
         s.forEach(i => {
-            if(! f.includes(i)) return true;
+            if(! f.includes(i)) missing = true;
         });
 
-        return false;
+        return missing;
     }
 
     return (
@@ -33,7 +35,7 @@ export default function Main({config, content}) {
 
             { control.editing && <Relation {...config} /> }
 
-            {/* <RecoilDempState atom={fieldValuesState} /> */}
+            <RecoilDempState atom={fieldValuesState} />
         </div>
     );
 }
