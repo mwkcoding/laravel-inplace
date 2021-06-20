@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { fieldControlState } from './../controls/atom/fieldControlState';
 import { fieldValuesState } from './recoil/atom/editorStates';
-import { resetCurrentFieldValues } from './recoil/selector/fieldValues';
 import BasicCheckbox from './fields/checkbox';
 
 export default function Relation(props) {
@@ -15,15 +14,23 @@ export default function Relation(props) {
 
     const [control, setControl] = useRecoilState(fieldControlState);
     const [fieldValues, setFieldValues] = useRecoilState(fieldValuesState);
-    const resetFieldValue = useRecoilValue(resetCurrentFieldValues(props.multiple));
 
     const firstMounded = useRef(true);
 
     useEffect(() => {
-        if (firstMounded.current && fieldValues.current.length === 0) {
-            setFieldValues({last: props.currentValues, current: props.currentValues});
+        if (firstMounded.current) {
+            let values = [];
+
+            if(fieldValues.last.length > 0) {
+                values = fieldValues.last;
+            }
+            else {
+                values = ! props.multiple ? props.currentValues.slice(0, 1) : props.currentValues;
+            }
+
+            setFieldValues({last: values, current: values});
+            firstMounded.current = false;
         }
-        firstMounded.current = false;
     }, [])
 
     useEffect(() => {
@@ -43,7 +50,7 @@ export default function Relation(props) {
 
     useEffect(() => {
         if(error.has)
-        setFieldValues((prevValues) => ({...prevValues, current: resetFieldValue })); 
+        setFieldValues((prevValues) => ({...prevValues, current: fieldValues.last })); 
     }, [error.has]);
     
     const dispatchSuccessEvent = () => {
