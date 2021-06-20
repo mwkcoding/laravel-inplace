@@ -6,7 +6,7 @@ import { resetCurrentFieldValues } from './recoil/selector/fieldValues';
 import BasicCheckbox from './fields/checkbox';
 
 export default function Relation(props) {
-    const skipPropsPass = ['model', 'relationName', 'relColumn', 'renderTemplate', 'fieldId', 'currentValues'];
+    const skipPropsPass = ['model', 'relationName', 'relColumn', 'renderTemplate', 'currentValues'];
 
     const [error, setError] = useState({has: false, type: '', message: ''});
     const [success, setSuccess] = useState(false);

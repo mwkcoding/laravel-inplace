@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { RecoilRoot, useRecoilState, useRecoilValue } from 'recoil';
+import { RecoilRoot, useRecoilValue } from 'recoil';
 import RecoilDempState from './../debug/RecoilDumpState';
 import { fieldControlState } from './../controls/atom/fieldControlState';
 import { fieldValuesState } from './recoil/atom/editorStates';

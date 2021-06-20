@@ -5,13 +5,13 @@
 @endpush
 
 <div>
-
     <div class="d-flex justify-content-between">
         <div id="_inplace-content:{{ $field_id }}">{!! $renderValue !!}</div>
 
+        @if(isset($before)) {!! $before->toHtml() !!} @endif
+
             <div class="_inplace-field-control"
             data-inplace-field-conf='{
-                "fieldId" : "{{ $field_id }}",
                 "contentId": "_inplace-content:{{ $field_id }}",
                 "hash": "{{ $hash }}",
                 "id": "{{ $id }}",
@@ -27,15 +27,10 @@
                 "currentValues": @json($currentValues),
                 "multiple": "{{ (bool) $multiple }}"
             }'>
-        </div>
+            </div>
+
+        @if(isset($after)) {!! $after->toHtml() !!} @endif
     </div>
-
-    @if(isset($before)) {!! $before->toHtml() !!} @endif
-
-    <div id="{{ $field_id }}"></div>
-        
-    @if(isset($after)) {!! $after->toHtml() !!} @endif
-
 </div>
 
 @push('inplace.component.script')
