@@ -8,7 +8,7 @@ import { fieldValuesState } from './recoil/atom/editorStates';
 import Relation from './relation';
 import Controls from './../controls';
 
-export default function Main({payload}) {
+export default function Main({config, content}) {
     const control = useRecoilValue(fieldControlState);
     const {last, current} = useRecoilValue(fieldValuesState);
 
@@ -24,11 +24,16 @@ export default function Main({payload}) {
 
     return (
         <div>
-            <Controls showSave={allowSave(last, current)} />
+            <div className="d-flex justify-content-between">
+                <div id={config.contentId} dangerouslySetInnerHTML={{__html: content}}></div>
+                <div>
+                    <Controls showSave={allowSave(last, current)} />
+                </div>
+            </div>
+
+            { control.editing && <Relation {...config} /> }
 
             {/* <RecoilDempState atom={fieldValuesState} /> */}
-
-            { control.editing && <Relation {...payload} /> }
         </div>
     );
 }
@@ -38,7 +43,7 @@ document.querySelectorAll('._inplace-field-control').forEach(function(node) {
 
     ReactDOM.render(
         <RecoilRoot>
-            <Main payload={payload} />
+            <Main config={payload} content={node.innerHTML} />
         </RecoilRoot>, node
     );
 });
