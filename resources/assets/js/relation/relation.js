@@ -5,12 +5,13 @@ import { fieldValuesState } from './recoil/atom/editorStates';
 import BasicCheckbox from './fields/checkbox';
 
 export default function Relation(props) {
-    const skipPropsPass = ['model', 'relationName', 'relColumn', 'renderTemplate', 'currentValues'];
+    const skipPropsPass = ['model', 'relationName', 'relColumn', 'renderTemplate', 'currentValues', 'signature'];
 
     const [error, setError] = useState({has: false, type: '', message: ''});
     const [success, setSuccess] = useState(false);
     const [validationErrors, setValidationErrors] = useState([]);
     const [saving, setSaving] = useState(false);
+    const [throttled, setThrottled] = useState(0);
 
     const [control, setControl] = useRecoilState(fieldControlState);
     const [fieldValues, setFieldValues] = useRecoilState(fieldValuesState);
@@ -80,6 +81,8 @@ export default function Relation(props) {
                 detail: { start: true }
             }));
 
+            let errorTypeText = '';
+
             fetch(window._inplace.relation.route, {
                 headers: {
                     "Content-Type": "application/json",
@@ -90,6 +93,7 @@ export default function Relation(props) {
                 method: 'POST',
                 credentials: "same-origin",
                 body: JSON.stringify({
+                    inplace_field_sign: props.signature,
                     values: fieldValues.current,
                     id: props.id,
                     model: props.model,
@@ -101,9 +105,19 @@ export default function Relation(props) {
                 })
             })
             .then(res => {
-                if(res.status === 422) setError({has: true, type: 'Validation Error !', message: ''});
-                else if(res.status === 403) setError({has: true, type: 'Permission restricted !', message: ''});
-                else if(res.status >= 500) setError({has: true, type: 'Server Error !', message: ''});
+                const errorTypes = [
+                    {code: 422, type: 'Validation Error !'},
+                    {code: 403, type: 'Permission restricted !'},
+                    {code: 401, type: 'Unauthorized !'},
+                    {code: 429, type: 'Too many requests !'},
+                    {code: 500, type: 'Server Error !'},
+                    {code: 503, type: 'Server Error !'}
+                ];
+                
+                const err = errorTypes.find((err) => err.code === res.status);
+                errorTypeText = typeof err !== 'undefined' ? err.type : 'Error saving content !';
+
+                if(res.headers.get('Retry-After')) setThrottled(res.headers.get('Retry-After'));
 
                 return res.json();
             })
@@ -122,7 +136,7 @@ export default function Relation(props) {
                 setError((prevErr) => {
                     return {
                         has: true,
-                        type: prevErr.type || 'Error saving content !',
+                        type: errorTypeText || 'Error saving content !',
                         message: Object.prototype.hasOwnProperty.call(result, 'message') && ' '+ result.message 
                     }
                 });
@@ -165,6 +179,8 @@ export default function Relation(props) {
             <BasicCheckbox {...fieldOptions} />
 
             <div className="message">
+                <span>throttled for {throttled}</span>
+
                 {! saving ?
                     error.has && (<><h2 className="text-danger">{error.type}</h2><span className="text-danger">{error.message}</span></>) : null
                 }
