@@ -10,6 +10,7 @@
     ...inlineTextEditable(), 
     editedContent: `{{ $value }}`, 
     content: `{{ $value }}`,
+    fieldSignature: `{{ $field_sign }}`,
     id: '{{ $id }}',
     model: '{{ $model }}',
     column: '{{ $column }}',
