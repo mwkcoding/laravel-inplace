@@ -9,6 +9,7 @@
     data-inplace-field-conf='{
         "contentId": "_inplace-content:{{ $field_id }}",
         "hash": "{{ $hash }}",
+        "signature": "{{ $field_sign }}",
         "id": "{{ $id }}",
         "model": "{{ $model }}",
         "relationName": "{{ $relationName }}",
