@@ -1,22 +1,47 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
+import { RecoilRoot, useRecoilValue } from 'recoil';
+import RecoilDempState from './../debug/RecoilDumpState';
+import { fieldControlState } from './../controls/atom/fieldControlState';
+import { fieldValuesState } from './recoil/atom/editorStates';
+import styled from 'styled-components';
+
 import Relation from './relation';
 import Controls from './../controls';
 
-export default function Main({payload}) {
-    const [editing, setEditing] = useState(false);
-    const [save, setSave] = useState(false);
+const Content = styled.div`
+display: flex;
+justify-content: space-between;
+`;
 
-    const handleToggleEdit = useCallback((status) => setEditing(status), []);
-    
-    const handleSave = useCallback(() => setSave(true), []);
-    const handleSaveFinished = useCallback(() => setSave(false), []);
+export default function Main({config, content}) {
+    const control = useRecoilValue(fieldControlState);
+    const {last, current} = useRecoilValue(fieldValuesState);
+
+    const allowSave = (f, s) => {
+        if (f.length !== s.length) return true;
+
+        let missing = false;
+
+        s.forEach(i => {
+            if(! f.includes(i)) missing = true;
+        });
+
+        return missing;
+    }
 
     return (
         <div>
-            <Controls editing={editing} onEditToggle={handleToggleEdit} onSave={handleSave} />
+            <Content>
+                <div id={config.contentId} dangerouslySetInnerHTML={{__html: content}}></div>
+                <div>
+                    <Controls showSave={allowSave(last, current)} />
+                </div>
+            </Content>
 
-            { editing && <Relation {...payload} save={save} onSaveFinished={handleSaveFinished} /> }
+            { control.editing && <Relation {...config} /> }
+
+            <RecoilDempState atom={fieldValuesState} />
         </div>
     );
 }
@@ -24,5 +49,9 @@ export default function Main({payload}) {
 document.querySelectorAll('._inplace-field-control').forEach(function(node) {
     const payload = JSON.parse(node.dataset.inplaceFieldConf);
 
-    ReactDOM.render(<Main payload={payload} />, node);
+    ReactDOM.render(
+        <RecoilRoot>
+            <Main config={payload} content={node.innerHTML} />
+        </RecoilRoot>, node
+    );
 });

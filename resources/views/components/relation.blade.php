@@ -5,37 +5,26 @@
 @endpush
 
 <div>
-
-    <div class="d-flex justify-content-between">
-        <div id="_inplace-content:{{ $field_id }}">{!! $renderValue !!}</div>
-
-            <div class="_inplace-field-control"
-            data-inplace-field-conf='{
-                "fieldId" : "{{ $field_id }}",
-                "contentId": "_inplace-content:{{ $field_id }}",
-                "hash": "{{ $hash }}",
-                "id": "{{ $id }}",
-                "model": "{{ $model }}",
-                "relationName": "{{ $relationName }}",
-                "relColumn": "{{ $relationColumn }}",
-                "renderTemplate": "{{ $renderTemplate }}",
-                "renderField": "relation.BasicCheckbox",
-                "rules": "{{ $validation }}",
-                "eachRules": "{{ $validateEach }}",
-                "thumbnailed": "{{ (bool) $thumbnailed }}",
-                "thumbnailWidth": "{{ $thumbnailWidth }}",
-                "currentValues": @json($currentValues),
-                "multiple": "{{ (bool) $multiple }}"
-            }'>
-        </div>
+    <div class="_inplace-field-control"
+    data-inplace-field-conf='{
+        "contentId": "_inplace-content:{{ $field_id }}",
+        "hash": "{{ $hash }}",
+        "signature": "{{ $field_sign }}",
+        "id": "{{ $id }}",
+        "model": "{{ $model }}",
+        "relationName": "{{ $relationName }}",
+        "relColumn": "{{ $relationColumn }}",
+        "renderTemplate": "{{ $renderTemplate }}",
+        "renderField": "relation.BasicCheckbox",
+        "rules": "{{ $validation }}",
+        "eachRules": "{{ $validateEach }}",
+        "thumbnailed": {{ (bool) $thumbnailed ? 'true' : 'false' }},
+        "thumbnailWidth": "{{ $thumbnailWidth }}",
+        "currentValues": @json($currentValues),
+        "multiple": {{ (bool) $multiple ? 'true' : 'false' }}
+    }'>
+        {!! $renderValue !!}
     </div>
-
-    @if(isset($before)) {!! $before->toHtml() !!} @endif
-
-    <div id="{{ $field_id }}"></div>
-        
-    @if(isset($after)) {!! $after->toHtml() !!} @endif
-
 </div>
 
 @push('inplace.component.script')

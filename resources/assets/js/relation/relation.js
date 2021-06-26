@@ -1,30 +1,59 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useRecoilState, useRecoilValue } from 'recoil';
+import { fieldControlState } from './../controls/atom/fieldControlState';
+import { fieldValuesState } from './recoil/atom/editorStates';
 import BasicCheckbox from './fields/checkbox';
 
 export default function Relation(props) {
-    const skipPropsPass = ['model', 'relationName', 'relColumn', 'renderTemplate', 'fieldId', 'currentValues'];
+    const skipPropsPass = ['model', 'relationName', 'relColumn', 'renderTemplate', 'currentValues', 'signature'];
 
     const [error, setError] = useState({has: false, type: '', message: ''});
     const [success, setSuccess] = useState(false);
     const [validationErrors, setValidationErrors] = useState([]);
-    const [input, setInput] = useState(null);
-    const [previousValues, setPreviousValues] = useState(props.currentValues);
     const [saving, setSaving] = useState(false);
+    const [throttled, setThrottled] = useState(0);
+
+    const [control, setControl] = useRecoilState(fieldControlState);
+    const [fieldValues, setFieldValues] = useRecoilState(fieldValuesState);
+
+    const firstMounded = useRef(true);
+
+    useEffect(() => {
+        if (firstMounded.current) {
+            let values = [];
+
+            if(fieldValues.last.length > 0) {
+                values = fieldValues.last;
+            }
+            else {
+                values = ! props.multiple ? props.currentValues.slice(0, 1) : props.currentValues;
+            }
+
+            setFieldValues({last: values, current: values});
+            firstMounded.current = false;
+        }
+    }, [])
 
     useEffect(() => {
         if(success) dispatchSuccessEvent();
     }, [success]);
     
     useEffect(() => {
-        if(props.save) {
-            handleSave();
-
-            props.onSaveFinished();
+        if(control.save) {
+            handleSave()
+            .then(() => {
+                setControl( (prevState) => ({...prevState, save: false }) );
+            });
 
             return;
         }
-    }, [props.save]);
+    }, [control.save]);
 
+    useEffect(() => {
+        if(error.has)
+        setFieldValues((prevValues) => ({...prevValues, current: fieldValues.last })); 
+    }, [error.has]);
+    
     const dispatchSuccessEvent = () => {
         window.dispatchEvent(new CustomEvent("inplace-editable-finish", {
             detail: { success: true }
@@ -44,84 +73,98 @@ export default function Relation(props) {
         setSuccess(false);
     }
 
-    const handleInputChange = useCallback((value) => setInput(value), []);
-
     const handleSave = () => {
-        resetFormStates();
-
-        window.dispatchEvent(new CustomEvent("inplace-editable-progress", {
-            detail: { start: true }
-        }));
-
-        fetch(window._inplace.relation.route, {
-            headers: {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-                "X-Requested-With": "XMLHttpRequest",
-                "X-CSRF-Token": window._inplace.csrf_token
-            },
-            method: 'POST',
-            credentials: "same-origin",
-            body: JSON.stringify({
-                values: input,
-                id: props.id,
-                model: props.model,
-                rules: props.rules,
-                eachRules: props.eachRules,
-                relationName: props.relationName,
-                relColumn: props.relColumn,
-                renderTemplate: props.renderTemplate,
-            })
-        })
-        .then(res => {
-            if(res.status === 422) setError({has: true, type: 'Validation Error !', message: ''});
-            else if(res.status === 403) setError({has: true, type: 'Permission restricted !', message: ''});
-            else if(res.status >= 500) setError({has: true, type: 'Server Error !', message: ''});
-
-            return res.json();
-        })
-        .then(result => {
-            if(Object.prototype.hasOwnProperty.call(result, 'success') && Number(result.success) === 1) {
-                setSuccess(true);
-
-                setPreviousValues(input);
-
-                if(Object.prototype.hasOwnProperty.call(result, 'redner') && result.redner)
-                document.getElementById(props.contentId).innerHTML = result.redner;
-                
-                return;
-            }
-
-            setError((prevErr) => {
-                return {
-                    has: true,
-                    type: prevErr.type || 'Error saving content !',
-                    message: Object.prototype.hasOwnProperty.call(result, 'message') && ' '+ result.message 
-                }
-            });
-
-            dispatchErrorEvent();
-
-            // if validation error show em all
-            if(Object.prototype.hasOwnProperty.call(result, 'errors')) {
-                setValidationErrors(Object.entries(result.errors).map(err => err[1]));
-            }
-
-            return;
-        })
-        .catch(err => {
-            setError({has: true, type: 'Network request failed !', message: 'Error saving content !'});
-
-            dispatchErrorEvent();
-        })
-        .finally(() => {
-            setSaving(false);
+        return new Promise((resolve) => {
+            resetFormStates();
 
             window.dispatchEvent(new CustomEvent("inplace-editable-progress", {
-                detail: { stop: true }
+                detail: { start: true }
             }));
-        });
 
+            let errorTypeText = '';
+
+            fetch(window._inplace.relation.route, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "X-CSRF-Token": window._inplace.csrf_token
+                },
+                method: 'POST',
+                credentials: "same-origin",
+                body: JSON.stringify({
+                    inplace_field_sign: props.signature,
+                    values: fieldValues.current,
+                    id: props.id,
+                    model: props.model,
+                    rules: props.rules,
+                    eachRules: props.eachRules,
+                    relationName: props.relationName,
+                    relColumn: props.relColumn,
+                    renderTemplate: props.renderTemplate,
+                })
+            })
+            .then(res => {
+                const errorTypes = [
+                    {code: 422, type: 'Validation Error !'},
+                    {code: 403, type: 'Permission restricted !'},
+                    {code: 401, type: 'Unauthorized !'},
+                    {code: 429, type: 'Too many requests !'},
+                    {code: 500, type: 'Server Error !'},
+                    {code: 503, type: 'Server Error !'}
+                ];
+                
+                const err = errorTypes.find((err) => err.code === res.status);
+                errorTypeText = typeof err !== 'undefined' ? err.type : 'Error saving content !';
+
+                if(res.headers.get('Retry-After')) setThrottled(res.headers.get('Retry-After'));
+
+                return res.json();
+            })
+            .then(result => {
+                if(Object.prototype.hasOwnProperty.call(result, 'success') && Number(result.success) === 1) {
+                    setSuccess(true);
+
+                    setFieldValues((prevValues) => ({...prevValues, last: fieldValues.current}));
+
+                    if(Object.prototype.hasOwnProperty.call(result, 'redner') && result.redner)
+                    document.getElementById(props.contentId).innerHTML = result.redner;
+                    
+                    return;
+                }
+
+                setError((prevErr) => {
+                    return {
+                        has: true,
+                        type: errorTypeText || 'Error saving content !',
+                        message: Object.prototype.hasOwnProperty.call(result, 'message') && ' '+ result.message 
+                    }
+                });
+
+                dispatchErrorEvent();
+
+                // if validation error show em all
+                if(Object.prototype.hasOwnProperty.call(result, 'errors')) {
+                    setValidationErrors(Object.entries(result.errors).map(err => err[1]));
+                }
+
+                return;
+            })
+            .catch(err => {
+                setError({has: true, type: 'Network request failed !', message: 'Error saving content !'});
+
+                dispatchErrorEvent();
+            })
+            .finally(() => {
+                setSaving(false);
+
+                window.dispatchEvent(new CustomEvent("inplace-editable-progress", {
+                    detail: { stop: true }
+                }));
+            });
+
+            resolve(true);
+        });
     }
 
     const fieldOptions = {...Object.keys(props).filter(key => ! skipPropsPass.includes(key))
@@ -133,9 +176,11 @@ export default function Relation(props) {
 
     return (
         <div>
-            <BasicCheckbox {...fieldOptions} currentValues={previousValues} onInputChange={handleInputChange} hasError={error.has} />
+            <BasicCheckbox {...fieldOptions} />
 
             <div className="message">
+                <span>throttled for {throttled}</span>
+
                 {! saving ?
                     error.has && (<><h2 className="text-danger">{error.type}</h2><span className="text-danger">{error.message}</span></>) : null
                 }

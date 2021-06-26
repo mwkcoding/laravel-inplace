@@ -113,18 +113,18 @@ refer to this example [component](https://github.com/devsrv/laravel-inplace-exam
 
 ```php
 @php
-$rules = serialize(['required', \Illuminate\Validation\Rule::in(['11', '12']), 'min:2']);  // make sure to serialize
+$rules = ['required', \Illuminate\Validation\Rule::in(['11', '12']), 'min:2'];
 @endphp
 
 <x-inplace-text
 model="App\Models\User:1"
 column="name"
-:validation="$rules"                   // complex validation can be passed by `serialize`
+:validation="$rules"                   // complex validation can be passed`
 >
   {{ \App\Models\User::find(1)->name }}
 </x-inplace-text>
 ```
-refer [this example](https://github.com/devsrv/laravel-inplace-example/blob/c81c21d76c888958964b1eb1a589ea524694f8e9/resources/views/welcome.blade.php#L57)
+refer [this example](https://github.com/devsrv/laravel-inplace-example/blob/2225ee785f4369f970cedaa09578d29c08b91098/resources/views/welcome.blade.php#L50)
 
 #### 📌 Note: 
 if using direct inplace blade component to pass all the configs, authorization will be enforced always. to override/customize this behaviour consider using [field maker](https://github.com/devsrv/laravel-inplace#advanced) configurator.
@@ -157,6 +157,38 @@ refer to [this file](https://github.com/devsrv/laravel-inplace-example/blob/mast
 `authorizeUsing( closure )`, `bypassAuthorize()`, `middleware(['foo', 'bar'])` etc.
 
 **_detailed documentation comming soon_ . . .**
+
+#### ☄️ Rate Limiting:
+there are two ways to rate limit inplace requests
+1. __Generic Rate Limiter:__ define [rate limiter](https://laravel.com/docs/8.x/routing#defining-rate-limiters) and put the rate limiter middleware name in either config file to apply globally or attach in the [field config](https://github.com/devsrv/laravel-inplace-example/blob/c81c21d76c888958964b1eb1a589ea524694f8e9/app/Http/Inplace/Text.php#L18) in `->middleware()` method. [example](https://github.com/devsrv/laravel-inplace-example/blob/47ecea39a8713db0f510be320ce548b4514878df/app/Providers/RouteServiceProvider.php#L66)
+> by doing this when a field's request gets blocked by 429, any field which is configured with that same rate limiter middleware will also be blocked
+
+2. __Field Level Rate Limiter:__ define [rate limiter](https://github.com/devsrv/laravel-inplace-example/blob/47ecea39a8713db0f510be320ce548b4514878df/app/Providers/RouteServiceProvider.php#L64) using `devsrv\inplace\RateLimiter` and attach it in [field config](https://github.com/devsrv/laravel-inplace-example/blob/47ecea39a8713db0f510be320ce548b4514878df/app/Http/Inplace/Relation.php#L30)
+> field level rate limiter blocks only same type fields. 
+
+_Example 1_ - if you are saving the name for user with id 1 and the field gets rate limited then this has no effect on any other field which is configured with the same field level rate limiter middleware.
+
+_Example 2_ - if you are updating badges relation of user with id 2 and the request gets rate limited then this has no effect on any other relation or even non relation field which is configured with the same field level rate limiter middleware
+
+##### Defining Field Level Rate Limiter: [example](https://github.com/devsrv/laravel-inplace-example/blob/master/app/Providers/RouteServiceProvider.php#L64)
+_`App\Providers\RouteServiceProvider.php`_
+```php
+use devsrv\inplace\RateLimiter as InplaceFieldRateLimiter;
+
+protected function configureRateLimiting()
+{
+	InplaceFieldRateLimiter::for('author_badges')->perMinute(1);  // support perMinutes | perHour | perDay
+}
+```
+
+Supported available limiter methods
+
+| Method | Description                                                                            |
+|----------------|----------------------------------------------------------------------------------------|
+| perMinute      | [check api](https://laravel.com/api/8.x/Illuminate/Cache/RateLimiting/Limit.html#method_perMinute)  |
+| perMinutes     | [check api](https://laravel.com/api/8.x/Illuminate/Cache/RateLimiting/Limit.html#method_perMinutes) |
+| perHour        | [check api](https://laravel.com/api/8.x/Illuminate/Cache/RateLimiting/Limit.html#method_perHour)    |
+| perDay         | [check api](https://laravel.com/api/8.x/Illuminate/Cache/RateLimiting/Limit.html#method_perDay)     |
 
 
 ### 🎁 Bonus:

@@ -30,6 +30,7 @@ class Relation extends ViewComponent
     public $field_id;
 
     public $hash = null;
+    public $field_sign = null;
 
     /**
      * Create a new component instance.
@@ -75,6 +76,7 @@ class Relation extends ViewComponent
         $rand = bin2hex(random_bytes(16));
         $this->field_id = 'relation:'. $rand;
         $this->hash = $id ? md5($id) : md5($rand);
+        $this->field_sign = md5($config['model'] . ':' . $config['relation_name'] . ':' . $config['relation_column']);
         $this->csrf_token = csrf_token();
         $this->save_route = route('inplace.relation.save');
         $this->model = Crypt::encryptString($config['model']);

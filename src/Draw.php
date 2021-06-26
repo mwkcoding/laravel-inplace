@@ -26,6 +26,8 @@ class Draw {
             return view($template, ['items' => $modelsCollection])->render();
         }
 
+        if(! $modelsCollection->count()) return 'Nothing here ...';
+
         return $modelsCollection->pluck($columnName)->implode(', ');
     }
 
@@ -46,6 +48,9 @@ class Draw {
     }
 
     private function renderDefault() {
+        if(! self::$valuesCollection->count())
+        return 'Nothing here ...';
+
         return self::$valuesCollection->pluck(self::$columnName)->implode(', ');
     }
 }
