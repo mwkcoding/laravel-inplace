@@ -24,6 +24,8 @@ class Text extends Component
     public $save_route;
     public $icons;
 
+    public $field_sign;
+
     public function __construct($model, $id = null, $column = null, $value = null, $renderAs = null, $saveUsing = null, $validation = 'required') {
         $field = new TextField(
             $model,
@@ -58,6 +60,8 @@ class Text extends Component
         $this->csrf_token = csrf_token();
         $this->save_route = route('inplace.save');
         $this->icons = config('inplace.icons');
+
+        $this->field_sign = md5($config['model'] . ':' . $config['column']);
     }
 
     /**
