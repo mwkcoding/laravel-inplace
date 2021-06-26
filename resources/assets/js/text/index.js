@@ -100,6 +100,7 @@ window.inlineTextEditable = function () {
                 credentials: "same-origin",
                 body: JSON.stringify({
                     id: this.id,
+                    inplace_field_sign: this.fieldSignature,
                     content: this.editedContent,
                     model: this.model,
                     column: this.column,
