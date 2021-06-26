@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.1.0 - 2021-06-26
+
+#### Added
+    - support rate limiting requests - generic & field level rate limiter
+
+#### Changed
+    - validation rules no longer needed to be serialized when passing directly via component attribute
+
 ## 2.0.0 - 2021-06-13
 
 #### Added
