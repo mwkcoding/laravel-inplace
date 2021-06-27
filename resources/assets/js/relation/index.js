@@ -38,7 +38,7 @@ export default function Main({config, content}) {
             <Content>
                 <div id={config.contentId} dangerouslySetInnerHTML={{__html: content}}></div>
                 <div>
-                    <RetryAfter />
+                    <RetryAfter fieldSignature={config.signature} />
 
                     <Controls showSave={allowSave} />
                 </div>
