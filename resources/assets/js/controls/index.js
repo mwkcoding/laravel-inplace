@@ -1,10 +1,12 @@
 import React, { useEffect } from 'react';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 import { fieldControlState } from './atom/fieldControlState';
 import useKeyPress from '../utils/hooks/useKeyPress';
+import { fieldControlAppearState } from '../controls/atom/fieldControlState';
 
 function Controls({showSave}) {
     const [control, setControl] = useRecoilState(fieldControlState);
+    const showControls = useRecoilValue(fieldControlAppearState);
 
     const handleCancel = () => setControl( {save: false, editing: false} );
     const handleEdit = () => setControl( {save: false, editing: true} );
@@ -15,6 +17,8 @@ function Controls({showSave}) {
     useEffect(() => {
         if(escaped && control.editing) handleCancel();
     }, [escaped, control.editing]);
+
+    if(! showControls) return null;
 
     return (
         control.editing ? 

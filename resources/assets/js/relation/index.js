@@ -4,6 +4,7 @@ import { RecoilRoot, useRecoilValue } from 'recoil';
 import RecoilDempState from './../debug/RecoilDumpState';
 import { fieldControlState } from './../controls/atom/fieldControlState';
 import { fieldValuesState } from './recoil/atom/editorStates';
+import RetryAfter from './retryAfter';
 import styled from 'styled-components';
 
 import Relation from './relation';
@@ -18,7 +19,7 @@ export default function Main({config, content}) {
     const control = useRecoilValue(fieldControlState);
     const {last, current} = useRecoilValue(fieldValuesState);
 
-    const allowSave = (f, s) => {
+    const _isNotSame = (f, s) => {
         if (f.length !== s.length) return true;
 
         let missing = false;
@@ -30,12 +31,16 @@ export default function Main({config, content}) {
         return missing;
     }
 
+    const allowSave = _isNotSame(last, current);
+
     return (
         <div>
             <Content>
                 <div id={config.contentId} dangerouslySetInnerHTML={{__html: content}}></div>
                 <div>
-                    <Controls showSave={allowSave(last, current)} />
+                    <RetryAfter />
+
+                    <Controls showSave={allowSave} />
                 </div>
             </Content>
 

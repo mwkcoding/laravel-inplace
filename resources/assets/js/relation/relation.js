@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { fieldControlState } from './../controls/atom/fieldControlState';
-import { fieldValuesState } from './recoil/atom/editorStates';
+import { fieldValuesState, fieldRateLimitedState } from './recoil/atom/editorStates';
 import BasicCheckbox from './fields/checkbox';
 
 export default function Relation(props) {
@@ -11,10 +11,10 @@ export default function Relation(props) {
     const [success, setSuccess] = useState(false);
     const [validationErrors, setValidationErrors] = useState([]);
     const [saving, setSaving] = useState(false);
-    const [throttled, setThrottled] = useState(0);
 
     const [control, setControl] = useRecoilState(fieldControlState);
     const [fieldValues, setFieldValues] = useRecoilState(fieldValuesState);
+    const setBlockedFor = useSetRecoilState(fieldRateLimitedState);
 
     const firstMounded = useRef(true);
 
@@ -117,7 +117,7 @@ export default function Relation(props) {
                 const err = errorTypes.find((err) => err.code === res.status);
                 errorTypeText = typeof err !== 'undefined' ? err.type : 'Error saving content !';
 
-                if(res.headers.get('Retry-After')) setThrottled(res.headers.get('Retry-After'));
+                if(res.headers.get('Retry-After')) setBlockedFor({ second: res.headers.get('Retry-After'), resetUnix: res.headers.get('X-RateLimit-Reset') });
 
                 return res.json();
             })
@@ -179,8 +179,6 @@ export default function Relation(props) {
             <BasicCheckbox {...fieldOptions} />
 
             <div className="message">
-                <span>throttled for {throttled}</span>
-
                 {! saving ?
                     error.has && (<><h2 className="text-danger">{error.type}</h2><span className="text-danger">{error.message}</span></>) : null
                 }

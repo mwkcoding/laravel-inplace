@@ -5,4 +5,9 @@ const fieldControlState = atom({
     default: {editing: false, save: false},
 });
 
-export { fieldControlState };
+const fieldControlAppearState = atom({
+    key: 'fieldControlAppearState',
+    default: true,
+});
+
+export { fieldControlState, fieldControlAppearState };
