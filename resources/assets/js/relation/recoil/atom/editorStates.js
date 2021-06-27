@@ -8,4 +8,12 @@ const fieldValuesState = atom({
     },
 });
 
-export { fieldValuesState };
+const fieldRateLimitedState = atom({
+    key: 'fieldRateLimitedState',
+    default: {
+        second: 0,
+        resetUnix: null
+    },
+});
+
+export { fieldValuesState, fieldRateLimitedState };
