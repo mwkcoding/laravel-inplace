@@ -3,6 +3,8 @@ import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { fieldControlState } from './../controls/atom/fieldControlState';
 import { fieldValuesState, fieldRateLimitedState } from './recoil/atom/editorStates';
 import BasicCheckbox from './fields/checkbox';
+import storage from '../utils/storage';
+import { getFieldKey } from '../utils/misc';
 
 export default function Relation(props) {
     const skipPropsPass = ['model', 'relationName', 'relColumn', 'renderTemplate', 'currentValues', 'signature'];
@@ -117,7 +119,13 @@ export default function Relation(props) {
                 const err = errorTypes.find((err) => err.code === res.status);
                 errorTypeText = typeof err !== 'undefined' ? err.type : 'Error saving content !';
 
-                if(res.headers.get('Retry-After')) setBlockedFor({ second: res.headers.get('Retry-After'), resetUnix: res.headers.get('X-RateLimit-Reset') });
+                if(res.headers.get('Retry-After')) {
+                    setBlockedFor({ second: res.headers.get('Retry-After'), resetUnix: res.headers.get('X-RateLimit-Reset') });
+
+                    storage.set(getFieldKey(props.signature), {
+                        'X-RateLimit-Reset' : res.headers.get('X-RateLimit-Reset')
+                    });
+                }
 
                 return res.json();
             })
