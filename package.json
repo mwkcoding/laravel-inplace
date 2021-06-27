@@ -27,6 +27,7 @@
     "alpinejs": "^2.8.2",
     "babel-loader": "^8.2.2",
     "lottie-web": "^5.7.7",
+    "moment": "^2.29.1",
     "postcss": "^8.2.9",
     "postcss-loader": "^5.2.0",
     "react": "^17.0.2",
