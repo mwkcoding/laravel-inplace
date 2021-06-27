@@ -1,14 +1,21 @@
 import React, { useEffect } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
 import { fieldControlState } from './atom/fieldControlState';
 import useKeyPress from '../utils/hooks/useKeyPress';
 import { fieldControlAppearState } from '../controls/atom/fieldControlState';
+import { fieldValuesState } from '../relation/recoil/atom/editorStates';
 
 function Controls({showSave}) {
     const [control, setControl] = useRecoilState(fieldControlState);
     const showControls = useRecoilValue(fieldControlAppearState);
+    const setFieldValues = useSetRecoilState(fieldValuesState);
 
-    const handleCancel = () => setControl( {save: false, editing: false} );
+    const handleCancel = () => {
+        setControl( {save: false, editing: false} );
+
+        setFieldValues((prevValues) => ({...prevValues, current: prevValues.last }));
+    };
+
     const handleEdit = () => setControl( {save: false, editing: true} );
     const handleSave = () => setControl( (prevState) => ({...prevState, save: true }) );
 

@@ -46,7 +46,7 @@ export default function Main({config, content}) {
 
             { control.editing && <Relation {...config} /> }
 
-            <RecoilDempState atom={fieldValuesState} />
+            {/* <RecoilDempState atom={fieldValuesState} /> */}
         </div>
     );
 }
