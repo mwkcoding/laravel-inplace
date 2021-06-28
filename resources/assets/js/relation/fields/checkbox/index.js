@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { useRecoilState, useRecoilValue } from 'recoil';
+import React from 'react';
+import { useRecoilState } from 'recoil';
 import { fieldValuesState } from './../../recoil/atom/editorStates';
 
 function BasicCheckbox(props) {
