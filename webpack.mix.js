@@ -7,6 +7,7 @@ mix
   .react()
   .sourceMaps(productionSourceMaps, 'source-map');
 
-// mix.copy([
-//     'dist/js/index.js',
-// ], '../../public/vendor/formash/js');
+/**development purpose */
+mix.copy([
+    'public/dist/resources/assets/js/relation/bundle.js',
+], '../../test/testapp/public/vendor/inplace/resources/assets/js/relation');
