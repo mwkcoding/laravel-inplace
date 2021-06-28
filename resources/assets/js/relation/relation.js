@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useRecoilState, useRecoilValue, useSetRecoilState } from 'recoil';
+import { useRecoilState, useSetRecoilState } from 'recoil';
 import { fieldControlState } from './../controls/atom/fieldControlState';
 import { fieldValuesState, fieldRateLimitedState } from './recoil/atom/editorStates';
 import BasicCheckbox from './fields/checkbox';
 import storage from '../utils/storage';
-import { getFieldKey } from '../utils/misc';
+import { _getFieldKey } from '../utils/misc';
 
 export default function Relation(props) {
     const skipPropsPass = ['model', 'relationName', 'relColumn', 'renderTemplate', 'currentValues', 'signature'];
@@ -122,7 +122,7 @@ export default function Relation(props) {
                 if(res.headers.get('Retry-After')) {
                     setBlockedFor({ second: res.headers.get('Retry-After'), resetUnix: res.headers.get('X-RateLimit-Reset') });
 
-                    storage.set(getFieldKey(props.signature), {
+                    storage.set(_getFieldKey(props.signature), {
                         'X-RateLimit-Reset' : res.headers.get('X-RateLimit-Reset')
                     });
                 }

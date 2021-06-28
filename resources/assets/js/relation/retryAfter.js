@@ -2,9 +2,13 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useRecoilState } from 'recoil';
 import { fieldRateLimitedState } from './recoil/atom/editorStates';
 import { fieldControlState, fieldControlAppearState } from '../controls/atom/fieldControlState';
-import moment from 'moment';
+import formatDistanceToNow from 'date-fns/formatDistanceToNow'
+import formatDuration from 'date-fns/formatDuration'
+import intervalToDuration from 'date-fns/intervalToDuration'
+import fromUnixTime from 'date-fns/fromUnixTime'
+import differenceInSeconds from 'date-fns/differenceInSeconds'
 import storage from '../utils/storage';
-import { getFieldKey, hasProperty } from '../utils/misc';
+import { _getFieldKey, _hasProperty } from '../utils/misc';
 
 export default function RetryAfter({fieldSignature}) {
     const [blockedFor, setBlockedFor] = useRecoilState(fieldRateLimitedState);
@@ -15,32 +19,43 @@ export default function RetryAfter({fieldSignature}) {
 
     const firstMounded = useRef(true);
 
-    const _formatDistance = (tillUnix) => {
-        const till = moment.unix(tillUnix);
+    const _waitingOver = (unix) => differenceInSeconds(fromUnixTime(unix), new Date()) <= 0;
 
-        if(till.diff(moment(), 'seconds') < 0) return null;
+    const _formatWaitTime = (unix) => {
+        if(_waitingOver(unix)) return null;
 
-        const duration = moment.duration(till.diff(moment()));
+        const duration = intervalToDuration({
+            start: new Date(),
+            end: fromUnixTime(unix)
+        });
 
-        const hr = duration.get('hours');
-        const min = duration.get('minutes');
-        const sec = duration.get('seconds');
+        const formattedDuration = formatDuration(duration, { format: ['hours', 'minutes', 'seconds'], zero: true, delimiter: ' ' });
+    
+        const regexpCaptureTimeDistance =  /((?<hour>\d+)\shour(s)?\s?)?((?<minute>\d+)\sminute(s)?\s?)?(?<second>\d+)\ssecond(s)?/ig;
+        const match = regexpCaptureTimeDistance.exec(formattedDuration);
+        if(match === null) return null;
 
-        const clock = `${hr > 0 ? hr +':' : ''}${min}:${sec.toString().padStart(2, '0')}`;
+        const {hour, minute, second} = match.groups;
 
-        return duration.humanize() +' ( ' + clock + ' )';
+        const hh = typeof hour !== 'undefined' && Number(hour) > 0 ? `${hour}:` : '';
+        const mm = typeof minute !== 'undefined' && Number(minute) > 0 ? `${minute.toString().padStart(2, '0')}:` : '';
+
+        const human = formatDistanceToNow(fromUnixTime(unix), { addSuffix: false });
+
+        return `${human} ( ${hh}${mm}${second.toString().padStart(2, '0')} )`;
     }
 
+    /**if the field is still blocked by any prevuois response */
     useEffect(() => {
         if (firstMounded.current) {
-            const meta = storage.get(getFieldKey(fieldSignature));
+            const meta = storage.get(_getFieldKey(fieldSignature));
 
-            if(! hasProperty(meta, 'X-RateLimit-Reset')) {
+            if(! _hasProperty(meta, 'X-RateLimit-Reset')) {
                 firstMounded.current = false;
                 return;
             }
 
-            const secondsRemaining = moment.unix(meta['X-RateLimit-Reset']).diff(moment(), 'seconds');
+            const secondsRemaining = differenceInSeconds(fromUnixTime(meta['X-RateLimit-Reset']), new Date());
                     
             if(secondsRemaining > 0) {
                 setBlockedFor({ second: secondsRemaining, resetUnix: meta['X-RateLimit-Reset'] });
@@ -56,9 +71,9 @@ export default function RetryAfter({fieldSignature}) {
 
             if(showControls) setShowControls(false);
 
-            if(moment.unix(blockedFor.resetUnix).diff(moment(), 'seconds') <= 0) setBlockedFor({second: 0, resetUnix: null});
+            if(_waitingOver(blockedFor.resetUnix)) setBlockedFor({second: 0, resetUnix: null});
 
-            let id = setInterval(() => setWaitTill(_formatDistance(blockedFor.resetUnix)), 1000);
+            let id = setInterval(() => setWaitTill(_formatWaitTime(blockedFor.resetUnix)), 1000);
             return () => clearInterval(id);
         }
 
