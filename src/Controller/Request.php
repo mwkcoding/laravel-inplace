@@ -2,14 +2,15 @@
 
 namespace devsrv\inplace\Controller;
 
-use Illuminate\Http\Request as HTTPRequest;
-use Illuminate\Support\Facades\Validator;
-use devsrv\inplace\Exceptions\{ ModelException, CustomEditableException };
-use Illuminate\Routing\Controller;
-use devsrv\inplace\Traits\{ ModelResolver };
 use devsrv\inplace\Helper;
-use devsrv\inplace\Fields\Text;
 use devsrv\inplace\Authorize;
+use devsrv\inplace\Fields\Text;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request as HTTPRequest;
+use devsrv\inplace\Traits\{ ModelResolver };
+use devsrv\inplace\Exceptions\{ ModelException, CustomEditableException };
 
 class Request extends Controller{
     use ModelResolver;
@@ -29,7 +30,9 @@ class Request extends Controller{
     public $rules = ['required'];
 
     public function __construct() {
-        $this->hydrate();
+        if(!App::runningInConsole()) {
+            $this->hydrate();
+        }
 
         $this->middleware($this->middlewares);
     }

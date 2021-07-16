@@ -2,15 +2,16 @@
 
 namespace devsrv\inplace\Controller;
 
+use devsrv\inplace\Draw;
+use devsrv\inplace\Helper;
 use Illuminate\Http\Request;
 use devsrv\inplace\Authorize;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\App;
 use devsrv\inplace\Traits\ModelResolver;
 use Illuminate\Support\Facades\Validator;
 use devsrv\inplace\Fields\Relation\Relation;
 use devsrv\inplace\Exceptions\CustomEditableException;
-use devsrv\inplace\Draw;
-use devsrv\inplace\Helper;
 
 class RelationRequest extends Controller {
     use ModelResolver;
@@ -33,7 +34,9 @@ class RelationRequest extends Controller {
     public $values = [];
 
     public function __construct() {
-        $this->hydrate();
+        if(!App::runningInConsole()) {
+            $this->hydrate();
+        }
 
         $this->middleware($this->middlewares);
     }
